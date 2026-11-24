@@ -47,7 +47,7 @@ Layout created on disk:
 
 ```
 ~/SandBox/<name>/                 WordPress install (override base dir with SANDBOXWP_HOME)
-~/SandBox/<name>/.env             Port, URLs, generated admin credentials (chmod 600)
+~/SandBox/<name>/.env             Port, URLs, admin login (chmod 600)
 ~/SandBox/<name>/.sandboxwp-bin/  Copies of serve.sh, lib.sh, router.php (launch.json points here)
 <project>/.claude/launch.json     "sandboxwp-<name>" configuration
 ```
@@ -80,8 +80,10 @@ and activated. `--type` always wins over detection.
   Must run on both macOS (BSD `sed`, `stat`, bash 3.2) and Linux (GNU). No `sed -i` without a
   portable wrapper, no associative arrays, no `readarray`.
 - **No network or global state in tests:** tests stub `wp`, `php` and `npx` via `PATH`.
-- **Never** commit secrets, `.env`, generated credentials or client data. Generated credentials live
-  only in the site `.env` and are shown to the user once; agents must not repeat them in chat.
+- **Never** commit secrets, `.env` or client data.
+- **Admin login is always `admin` / `password`** (overridable with `SANDBOXWP_ADMIN_USER` /
+  `SANDBOXWP_ADMIN_PASSWORD`). This is deliberate for local development and safe only because the
+  server binds to `127.0.0.1`. Never bind to `0.0.0.0` or add tunnelling/sharing features.
 - The plugin must never write outside the user's project, except caches managed by WP-CLI/npm.
 
 ## Commands

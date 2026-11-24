@@ -7,8 +7,8 @@ All notable changes to this project are documented here. Versions follow [semver
 ### Added
 
 - `/sandboxwp-ai:wp-local` command and `sandboxwp-ai` skill.
-- `setup.sh`: WordPress + SQLite drop-in site in `~/SandBox/<name>`, `.env` with generated
-  credentials, plugin/theme mount and activation. Project type read from the project's `AGENTS.md`,
+- `setup.sh`: WordPress + SQLite drop-in site in `~/SandBox/<name>`, `admin` / `password` login
+  (overridable via environment), plugin/theme mount and activation. Project type read from the project's `AGENTS.md`,
   with header detection as fallback.
 - `serve.sh`: PHP built-in server with workers and a router (pretty permalinks, dotfiles blocked),
   or WordPress Playground backend.

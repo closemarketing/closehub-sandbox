@@ -48,13 +48,6 @@ sbx_free_port() {
 	return 1
 }
 
-sbx_random_password() {
-	local pw
-	pw="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c 24 || true)"
-	[ -n "$pw" ] || sbx_die "could not generate a password"
-	printf '%s\n' "$pw"
-}
-
 # Detect what the project is from its files: plugin | theme | none | ambiguous.
 # Only a fallback: the project's AGENTS.md is the source of truth (see AGENTS.md of this plugin).
 sbx_detect_type() {

@@ -5,7 +5,8 @@
 #                 [--backend auto|php|playground] [--port N] [--wp-version VER]
 #
 # Prints KEY=value lines on stdout (SANDBOXWP_SITE, SANDBOXWP_URL, ...) for the caller.
-# Generated admin credentials are stored only in <site>/.env, never printed.
+# Admin login is always admin / password (override with SANDBOXWP_ADMIN_USER / SANDBOXWP_ADMIN_PASSWORD).
+# Acceptable only because the server binds to 127.0.0.1: never expose a sandbox on the network.
 set -euo pipefail
 
 SBX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -80,6 +81,8 @@ emit() {
 	printf 'SANDBOXWP_BACKEND=%s\n' "$(sbx_env_get "$ENV_FILE" SANDBOXWP_BACKEND)"
 	printf 'SANDBOXWP_TYPE=%s\n' "$(sbx_env_get "$ENV_FILE" SANDBOXWP_TYPE)"
 	printf 'SANDBOXWP_ENV=%s\n' "$ENV_FILE"
+	printf 'SANDBOXWP_ADMIN_USER=%s\n' "$(sbx_env_get "$ENV_FILE" SANDBOXWP_ADMIN_USER)"
+	printf 'SANDBOXWP_ADMIN_PASSWORD=%s\n' "$(sbx_env_get "$ENV_FILE" SANDBOXWP_ADMIN_PASSWORD)"
 }
 
 # Re-running on an existing sandbox is a no-op: report it instead of reinstalling.
@@ -100,8 +103,8 @@ mkdir -p "$SITE/.sandboxwp-bin"
 cp "$SBX_ROOT/scripts/serve.sh" "$SBX_ROOT/scripts/lib.sh" "$SBX_ROOT/scripts/router.php" "$SITE/.sandboxwp-bin/"
 chmod +x "$SITE/.sandboxwp-bin/serve.sh"
 
-ADMIN_USER="admin"
-ADMIN_PASSWORD="$(sbx_random_password)"
+ADMIN_USER="${SANDBOXWP_ADMIN_USER:-admin}"
+ADMIN_PASSWORD="${SANDBOXWP_ADMIN_PASSWORD:-password}"
 TMP_ENV="$SITE/.env.partial"
 rm -f "$TMP_ENV"
 sbx_env_set "$TMP_ENV" SANDBOXWP_NAME "$NAME"

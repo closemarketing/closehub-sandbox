@@ -50,7 +50,9 @@ Options:
 4. Adds a `sandboxwp-<name>` entry to `.claude/launch.json` (other entries are kept) and starts it
    with `preview_start`.
 
-Admin credentials are generated and stored in `~/SandBox/<name>/.env` (mode 600).
+Log in to `/wp-admin/` with **`admin` / `password`**. Override with the `SANDBOXWP_ADMIN_USER` and
+`SANDBOXWP_ADMIN_PASSWORD` environment variables before creating the site. The server only listens on
+`127.0.0.1`, which is what makes a fixed login acceptable: don't expose a sandbox on the network.
 
 ### Useful commands
 

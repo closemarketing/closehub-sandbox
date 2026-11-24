@@ -68,12 +68,6 @@ teardown() { common_teardown; }
 	[ "$SBX_B" = "x=y" ]
 }
 
-@test "sbx_random_password is 24 alphanumeric chars" {
-	pw="$(sbx_random_password)"
-	[ "${#pw}" -eq 24 ]
-	[[ "$pw" =~ ^[A-Za-z0-9]+$ ]]
-}
-
 @test "sbx_free_port returns a numeric port at or above the start" {
 	port="$(sbx_free_port 18080)"
 	[[ "$port" =~ ^[0-9]+$ ]]

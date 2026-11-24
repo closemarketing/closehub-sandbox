@@ -27,7 +27,8 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh" --project "$PWD" [--name NAME] [--
 ```
 
 - Run it in the foreground with a 5-minute timeout (it downloads WordPress the first time).
-- It prints `KEY=value` lines: keep `SANDBOXWP_SITE`, `SANDBOXWP_URL`, `SANDBOXWP_PORT`, `SANDBOXWP_ENV`.
+- It prints `KEY=value` lines: keep `SANDBOXWP_SITE`, `SANDBOXWP_URL`, `SANDBOXWP_PORT`, `SANDBOXWP_ENV`,
+  `SANDBOXWP_ADMIN_USER`, `SANDBOXWP_ADMIN_PASSWORD`.
 - If it fails on missing PHP/WP-CLI/Node, show the user the message and the install link; stop.
 - Re-running on an existing sandbox reuses it; that is expected.
 
@@ -53,6 +54,6 @@ Tell the user, briefly:
 - URL and that wp-admin is at `<SANDBOXWP_URL>/wp-admin/`.
 - Site folder (`SANDBOXWP_SITE`) and backend.
 - Which plugin/theme was mounted and activated, or that the site is empty.
-- **Credentials:** say they are in `SANDBOXWP_ENV` (`SANDBOXWP_ADMIN_USER` / `SANDBOXWP_ADMIN_PASSWORD`).
-  Do not print the password in chat.
+- **Login:** `admin` / `password` (or the `SANDBOXWP_ADMIN_USER` / `SANDBOXWP_ADMIN_PASSWORD`
+  values the script printed, if the user overrode them).
 - Any activation warning from the script (e.g. missing `composer install` or build step).

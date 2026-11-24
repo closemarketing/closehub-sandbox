@@ -16,7 +16,7 @@ Follow the `/sandboxwp-ai:wp-local` command (`${CLAUDE_PLUGIN_ROOT}/commands/wp-
 - **Project type comes from the project's `AGENTS.md`/`CLAUDE.md`** (plugin, theme, or none). Pass it
   as `--type`. Only without that file fall back to the script's header detection.
 - Run `scripts/setup.sh`, then `scripts/launch.sh`, then `preview_start` with the printed name.
-- Never print the generated admin password; point the user to the site `.env`.
+- Login is always `admin` / `password` (overridable with `SANDBOXWP_ADMIN_USER` / `SANDBOXWP_ADMIN_PASSWORD`).
 
 ## Day-to-day operations
 
@@ -39,4 +39,6 @@ Follow the `/sandboxwp-ai:wp-local` command (`${CLAUDE_PLUGIN_ROOT}/commands/wp-
 
 - Sandboxes are local-only (`WP_ENVIRONMENT_TYPE=local`). Never configure them with production
   API keys or point integrations (ERP, CRM, payments) at real accounts.
-- The router blocks dotfiles (`.env`, `.ht.sqlite`), so credentials and the database are not served.
+- The router blocks dotfiles (`.env`, `.ht.sqlite`), so the config and the database are not served.
+- The fixed `admin` / `password` login is safe only because the server binds to `127.0.0.1`.
+  Never bind a sandbox to `0.0.0.0` or expose it through a tunnel.

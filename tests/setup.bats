@@ -66,13 +66,23 @@ SETUP() { bash "$SBX_REPO/scripts/setup.sh" "$@"; }
 	grep -q '^SANDBOXWP_TYPE=none$' "$SANDBOXWP_HOME/project/.env"
 }
 
-@test "never prints the generated admin password" {
+@test "admin login defaults to admin / password" {
 	stubs="$(stub_cmd npx 'exit 0')"
 	PATH="$stubs:$(minimal_path)" run SETUP --project "$PROJECT" --backend playground --port 9125
 	[ "$status" -eq 0 ]
-	pw="$(grep '^SANDBOXWP_ADMIN_PASSWORD=' "$SANDBOXWP_HOME/project/.env" | cut -d= -f2)"
-	[ -n "$pw" ]
-	[[ "$output" != *"$pw"* ]]
+	grep -q '^SANDBOXWP_ADMIN_USER=admin$' "$SANDBOXWP_HOME/project/.env"
+	grep -q '^SANDBOXWP_ADMIN_PASSWORD=password$' "$SANDBOXWP_HOME/project/.env"
+	[[ "$output" == *"SANDBOXWP_ADMIN_USER=admin"* ]]
+	[[ "$output" == *"SANDBOXWP_ADMIN_PASSWORD=password"* ]]
+}
+
+@test "admin login can be overridden from the environment" {
+	stubs="$(stub_cmd npx 'exit 0')"
+	SANDBOXWP_ADMIN_USER=dev SANDBOXWP_ADMIN_PASSWORD=secret PATH="$stubs:$(minimal_path)" \
+		run SETUP --project "$PROJECT" --backend playground --port 9127
+	[ "$status" -eq 0 ]
+	grep -q '^SANDBOXWP_ADMIN_USER=dev$' "$SANDBOXWP_HOME/project/.env"
+	grep -q '^SANDBOXWP_ADMIN_PASSWORD=secret$' "$SANDBOXWP_HOME/project/.env"
 }
 
 @test "re-running reuses an existing sandbox" {
