@@ -30,11 +30,13 @@ Generic and public: it must work for any WordPress developer, not only CLOSE.
 .claude-plugin/plugin.json        Plugin manifest (name, version)
 .claude-plugin/marketplace.json   Single-plugin marketplace (install from this repo)
 commands/wp-local.md              /closehub-sandbox:wp-local — orchestrates the flow below
+commands/wp-remove.md             /closehub-sandbox:wp-remove — confirms and deletes a sandbox
 skills/closehub-sandbox/SKILL.md      Auto-triggered guidance ("local WordPress", "sandbox"...)
 scripts/lib.sh                    Shared helpers: logging, dependency checks, free port, .env I/O
 scripts/setup.sh                  Creates the site (core, SQLite drop-in, config, install, mount)
 scripts/serve.sh                  Starts the server; this is what launch.json runs
-scripts/launch.sh                 Merges the closehub-sandbox entry into .claude/launch.json
+scripts/launch.sh                 .claude/launch.json entries: add (--site), --list (ok|missing), --remove NAME
+scripts/remove.sh                 Deletes a sandbox (--yes required; refuses non-sandbox dirs; stops its server)
 scripts/router.php                Router for php -S (pretty permalinks, static files)
 templates/env.example             Variables written to the site .env
 templates/wp-config-env.php       Loads .env into constants from wp-config.php

@@ -45,3 +45,40 @@ json_get() {
 	[ "$status" -ne 0 ]
 	[[ "$output" == *"run setup.sh first"* ]]
 }
+
+@test "--list reports ok and missing sites" {
+	LAUNCH --project "$PROJECT" --site "$SITE" >/dev/null 2>&1
+	gone="$CLOSEHUB_SANDBOX_HOME/gone"
+	mkdir -p "$gone"
+	printf 'CLOSEHUB_SANDBOX_NAME=gone\nCLOSEHUB_SANDBOX_PORT=8124\n' >"$gone/.env"
+	LAUNCH --project "$PROJECT" --site "$gone" >/dev/null 2>&1
+	rm -rf "$gone"
+
+	run LAUNCH --project "$PROJECT" --list
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"closehub-sandbox-demo	$SITE	ok"* ]]
+	[[ "$output" == *"closehub-sandbox-gone	$gone	missing"* ]]
+}
+
+@test "--list ignores other configurations and a missing launch.json" {
+	run LAUNCH --project "$PROJECT" --list
+	[ "$status" -eq 0 ]
+	[ -z "$output" ]
+	mkdir -p "$PROJECT/.claude"
+	echo '{"version":"0.0.1","configurations":[{"name":"vite","port":5173}]}' >"$PROJECT/.claude/launch.json"
+	run LAUNCH --project "$PROJECT" --list
+	[ -z "$output" ]
+}
+
+@test "--remove drops only the named entry, even if the site is gone" {
+	mkdir -p "$PROJECT/.claude"
+	echo '{"version":"0.0.1","configurations":[{"name":"vite","port":5173}]}' >"$PROJECT/.claude/launch.json"
+	LAUNCH --project "$PROJECT" --site "$SITE" >/dev/null 2>&1
+	rm -rf "$SITE"
+
+	run LAUNCH --project "$PROJECT" --remove closehub-sandbox-demo
+	[ "$status" -eq 0 ]
+	run json_get "$PROJECT/.claude/launch.json"
+	[[ "$output" == *'"name":"vite"'* ]]
+	[[ "$output" != *"closehub-sandbox-demo"* ]]
+}
