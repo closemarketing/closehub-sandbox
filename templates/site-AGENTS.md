@@ -11,7 +11,7 @@
 
 ## Local environment
 
-This is a local sandbox created with [sandboxwp-ai](https://github.com/closemarketing/sandboxwp-ai):
+This is a local sandbox created with [closehub-sandbox](https://github.com/closemarketing/closehub-sandbox):
 WordPress on the PHP built-in server with SQLite. No MySQL, no Docker.
 
 | | |
@@ -20,7 +20,7 @@ WordPress on the PHP built-in server with SQLite. No MySQL, no Docker.
 | URL | {{SITE_URL}} |
 | Admin | {{SITE_URL}}/wp-admin/ — `{{ADMIN_USER}}` / `{{ADMIN_PASSWORD}}` |
 | Start / stop | `preview_start` / `preview_stop` with `{{LAUNCH_NAME}}` (`.claude/launch.json`) |
-| Start outside the Claude app | `bash {{SITE_DIR}}/.sandboxwp-bin/serve.sh` |
+| Start outside the Claude app | `bash {{SITE_DIR}}/.closehub-sandbox-bin/serve.sh` |
 | Database | SQLite in `wp-content/database/` |
 | PHP errors | `wp-content/debug.log` |
 

@@ -1,4 +1,4 @@
-# sandboxwp-ai
+# closehub-sandbox
 
 Local WordPress sandboxes for [Claude Code](https://claude.com/claude-code), without leaving Claude.
 
@@ -9,8 +9,8 @@ Claude's built-in browser.
 ## Install
 
 ```bash
-/plugin marketplace add closemarketing/sandboxwp-ai
-/plugin install sandboxwp-ai@sandboxwp-ai
+/plugin marketplace add closemarketing/closehub-sandbox
+/plugin install closehub-sandbox@closehub-sandbox
 ```
 
 ## Requirements
@@ -24,7 +24,7 @@ Claude's built-in browser.
 From the root of a plugin or theme repo:
 
 ```
-/sandboxwp-ai:wp-local
+/closehub-sandbox:wp-local
 ```
 
 Or just ask: *"spin up a local WordPress for this plugin"*.
@@ -48,7 +48,7 @@ Options:
    neither. Without it, it detects `Plugin Name:` / `Theme Name:` headers.
 2. **Asks where to create the site**: the current folder when it is empty and you are building a
    website (e.g. you made `~/Studio/my-shop` and ran the command there), `~/SandBox/<name>`
-   (change the base with `SANDBOXWP_HOME`) or any path. A plugin/theme repo is never used as the
+   (change the base with `CLOSEHUB_SANDBOX_HOME`) or any path. A plugin/theme repo is never used as the
    site folder, because it is mounted into the site.
    For a website it also asks what the site is about, the kind of site and the language, and
    writes an `AGENTS.md` for it.
@@ -56,11 +56,11 @@ Options:
    the official [SQLite Database Integration](https://wordpress.org/plugins/sqlite-database-integration/)
    drop-in, pretty permalinks, `WP_ENVIRONMENT_TYPE=local`, debug log on.
 4. Symlinks your repo into `wp-content/plugins` or `wp-content/themes` and activates it.
-5. Adds a `sandboxwp-<name>` entry to `.claude/launch.json` (other entries are kept) and starts it
+5. Adds a `closehub-sandbox-<name>` entry to `.claude/launch.json` (other entries are kept) and starts it
    with `preview_start`.
 
-Log in to `/wp-admin/` with **`admin` / `password`**. Override with the `SANDBOXWP_ADMIN_USER` and
-`SANDBOXWP_ADMIN_PASSWORD` environment variables before creating the site. The server only listens on
+Log in to `/wp-admin/` with **`admin` / `password`**. Override with the `CLOSEHUB_SANDBOX_ADMIN_USER` and
+`CLOSEHUB_SANDBOX_ADMIN_PASSWORD` environment variables before creating the site. The server only listens on
 `127.0.0.1`, which is what makes a fixed login acceptable: don't expose a sandbox on the network.
 
 ### Useful commands
@@ -68,7 +68,7 @@ Log in to `/wp-admin/` with **`admin` / `password`**. Override with the `SANDBOX
 ```bash
 wp --path=~/SandBox/<name> plugin list          # WP-CLI against the sandbox
 tail -f ~/SandBox/<name>/wp-content/debug.log    # PHP notices and errors
-bash ~/SandBox/<name>/.sandboxwp-bin/serve.sh    # start the server outside the Claude app
+bash ~/SandBox/<name>/.closehub-sandbox-bin/serve.sh    # start the server outside the Claude app
 ```
 
 ## Limits

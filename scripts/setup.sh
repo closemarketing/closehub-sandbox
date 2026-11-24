@@ -8,8 +8,8 @@
 # --dir is where WordPress is installed (default ~/SandBox/<name>). It must be empty (only
 # .claude, .git*, AGENTS.md, CLAUDE.md, README.md, .DS_Store allowed) and, for a plugin/theme
 # project, outside the project (the project is symlinked into the site).
-# Prints KEY=value lines on stdout (SANDBOXWP_SITE, SANDBOXWP_URL, ...) for the caller.
-# Admin login is always admin / password (override with SANDBOXWP_ADMIN_USER / SANDBOXWP_ADMIN_PASSWORD).
+# Prints KEY=value lines on stdout (CLOSEHUB_SANDBOX_SITE, CLOSEHUB_SANDBOX_URL, ...) for the caller.
+# Admin login is always admin / password (override with CLOSEHUB_SANDBOX_ADMIN_USER / CLOSEHUB_SANDBOX_ADMIN_PASSWORD).
 # Acceptable only because the server binds to 127.0.0.1: never expose a sandbox on the network.
 set -euo pipefail
 
@@ -95,20 +95,20 @@ if [ "$TYPE" != none ]; then
 fi
 
 emit() {
-	printf 'SANDBOXWP_SITE=%s\n' "$SITE"
-	printf 'SANDBOXWP_NAME=%s\n' "$NAME"
-	printf 'SANDBOXWP_PORT=%s\n' "$(sbx_env_get "$ENV_FILE" SANDBOXWP_PORT)"
-	printf 'SANDBOXWP_URL=%s\n' "$(sbx_env_get "$ENV_FILE" WP_HOME)"
-	printf 'SANDBOXWP_BACKEND=%s\n' "$(sbx_env_get "$ENV_FILE" SANDBOXWP_BACKEND)"
-	printf 'SANDBOXWP_TYPE=%s\n' "$(sbx_env_get "$ENV_FILE" SANDBOXWP_TYPE)"
-	printf 'SANDBOXWP_ENV=%s\n' "$ENV_FILE"
-	printf 'SANDBOXWP_ADMIN_USER=%s\n' "$(sbx_env_get "$ENV_FILE" SANDBOXWP_ADMIN_USER)"
-	printf 'SANDBOXWP_ADMIN_PASSWORD=%s\n' "$(sbx_env_get "$ENV_FILE" SANDBOXWP_ADMIN_PASSWORD)"
+	printf 'CLOSEHUB_SANDBOX_SITE=%s\n' "$SITE"
+	printf 'CLOSEHUB_SANDBOX_NAME=%s\n' "$NAME"
+	printf 'CLOSEHUB_SANDBOX_PORT=%s\n' "$(sbx_env_get "$ENV_FILE" CLOSEHUB_SANDBOX_PORT)"
+	printf 'CLOSEHUB_SANDBOX_URL=%s\n' "$(sbx_env_get "$ENV_FILE" WP_HOME)"
+	printf 'CLOSEHUB_SANDBOX_BACKEND=%s\n' "$(sbx_env_get "$ENV_FILE" CLOSEHUB_SANDBOX_BACKEND)"
+	printf 'CLOSEHUB_SANDBOX_TYPE=%s\n' "$(sbx_env_get "$ENV_FILE" CLOSEHUB_SANDBOX_TYPE)"
+	printf 'CLOSEHUB_SANDBOX_ENV=%s\n' "$ENV_FILE"
+	printf 'CLOSEHUB_SANDBOX_ADMIN_USER=%s\n' "$(sbx_env_get "$ENV_FILE" CLOSEHUB_SANDBOX_ADMIN_USER)"
+	printf 'CLOSEHUB_SANDBOX_ADMIN_PASSWORD=%s\n' "$(sbx_env_get "$ENV_FILE" CLOSEHUB_SANDBOX_ADMIN_PASSWORD)"
 }
 
 # Re-running on an existing sandbox is a no-op: report it instead of reinstalling.
 # Only a .env written by us counts; a project's own .env (Laravel, etc.) must not.
-if [ -n "$(sbx_env_get "$ENV_FILE" SANDBOXWP_NAME 2>/dev/null || true)" ]; then
+if [ -n "$(sbx_env_get "$ENV_FILE" CLOSEHUB_SANDBOX_NAME 2>/dev/null || true)" ]; then
 	sbx_info "sandbox '$NAME' already exists at $SITE; reusing it"
 	emit
 	exit 0
@@ -116,7 +116,7 @@ fi
 
 if [ -d "$SITE" ]; then
 	if [ -f "$SITE/wp-config.php" ] || [ -f "$SITE/wp-load.php" ]; then
-		sbx_die "$SITE already contains a WordPress install not created by sandboxwp-ai (WordPress Studio, Local...?); choose another directory"
+		sbx_die "$SITE already contains a WordPress install not created by closehub-sandbox (WordPress Studio, Local...?); choose another directory"
 	fi
 	sbx_dir_is_free "$SITE" || sbx_die "$SITE is not empty; choose an empty directory or a new one"
 fi
@@ -129,31 +129,31 @@ URL="http://localhost:$PORT"
 mkdir -p "$SITE"
 # Site created inside a git checkout: keep the config, database and helpers out of commits.
 if [ -d "$SITE/.git" ]; then
-	for entry in .env .sandboxwp-bin/ wp-content/database/ wp-content/debug.log; do
+	for entry in .env .closehub-sandbox-bin/ wp-content/database/ wp-content/debug.log; do
 		grep -qxF "$entry" "$SITE/.gitignore" 2>/dev/null || printf '%s\n' "$entry" >>"$SITE/.gitignore"
 	done
 fi
 # serve.sh, lib.sh and router.php live inside the site so launch.json survives plugin updates.
-mkdir -p "$SITE/.sandboxwp-bin"
-cp "$SBX_ROOT/scripts/serve.sh" "$SBX_ROOT/scripts/lib.sh" "$SBX_ROOT/scripts/router.php" "$SITE/.sandboxwp-bin/"
-chmod +x "$SITE/.sandboxwp-bin/serve.sh"
+mkdir -p "$SITE/.closehub-sandbox-bin"
+cp "$SBX_ROOT/scripts/serve.sh" "$SBX_ROOT/scripts/lib.sh" "$SBX_ROOT/scripts/router.php" "$SITE/.closehub-sandbox-bin/"
+chmod +x "$SITE/.closehub-sandbox-bin/serve.sh"
 
-ADMIN_USER="${SANDBOXWP_ADMIN_USER:-admin}"
-ADMIN_PASSWORD="${SANDBOXWP_ADMIN_PASSWORD:-password}"
+ADMIN_USER="${CLOSEHUB_SANDBOX_ADMIN_USER:-admin}"
+ADMIN_PASSWORD="${CLOSEHUB_SANDBOX_ADMIN_PASSWORD:-password}"
 TMP_ENV="$SITE/.env.partial"
 rm -f "$TMP_ENV"
-sbx_env_set "$TMP_ENV" SANDBOXWP_NAME "$NAME"
-sbx_env_set "$TMP_ENV" SANDBOXWP_BACKEND "$BACKEND"
-sbx_env_set "$TMP_ENV" SANDBOXWP_TYPE "$TYPE"
-sbx_env_set "$TMP_ENV" SANDBOXWP_PROJECT "$PROJECT"
-sbx_env_set "$TMP_ENV" SANDBOXWP_PORT "$PORT"
+sbx_env_set "$TMP_ENV" CLOSEHUB_SANDBOX_NAME "$NAME"
+sbx_env_set "$TMP_ENV" CLOSEHUB_SANDBOX_BACKEND "$BACKEND"
+sbx_env_set "$TMP_ENV" CLOSEHUB_SANDBOX_TYPE "$TYPE"
+sbx_env_set "$TMP_ENV" CLOSEHUB_SANDBOX_PROJECT "$PROJECT"
+sbx_env_set "$TMP_ENV" CLOSEHUB_SANDBOX_PORT "$PORT"
 sbx_env_set "$TMP_ENV" WP_HOME "$URL"
 sbx_env_set "$TMP_ENV" WP_SITEURL "$URL"
 sbx_env_set "$TMP_ENV" WP_ENVIRONMENT_TYPE local
-sbx_env_set "$TMP_ENV" SANDBOXWP_LOCALE "$LOCALE"
+sbx_env_set "$TMP_ENV" CLOSEHUB_SANDBOX_LOCALE "$LOCALE"
 sbx_env_set "$TMP_ENV" WP_DEBUG true
-sbx_env_set "$TMP_ENV" SANDBOXWP_ADMIN_USER "$ADMIN_USER"
-sbx_env_set "$TMP_ENV" SANDBOXWP_ADMIN_PASSWORD "$ADMIN_PASSWORD"
+sbx_env_set "$TMP_ENV" CLOSEHUB_SANDBOX_ADMIN_USER "$ADMIN_USER"
+sbx_env_set "$TMP_ENV" CLOSEHUB_SANDBOX_ADMIN_PASSWORD "$ADMIN_PASSWORD"
 
 if [ "$BACKEND" = playground ]; then
 	# Playground keeps its own SQLite database and mounts the project itself (--auto-mount).
@@ -183,10 +183,10 @@ php -r 'file_put_contents($argv[2], strtr(file_get_contents($argv[1]), [$argv[3]
 	"'{SQLITE_IMPLEMENTATION_FOLDER_PATH}'" "__DIR__ . '/plugins/sqlite-database-integration'" \
 	"{SQLITE_PLUGIN}" "sqlite-database-integration/load.php"
 
-cp "$SBX_ROOT/templates/wp-config-env.php" "$SITE/sandboxwp-env.php"
+cp "$SBX_ROOT/templates/wp-config-env.php" "$SITE/closehub-sandbox-env.php"
 wpcli config create --dbname=wordpress --dbuser=sqlite --dbpass= --skip-check --quiet \
 	--extra-php <<'PHP' >&2
-require_once __DIR__ . '/sandboxwp-env.php';
+require_once __DIR__ . '/closehub-sandbox-env.php';
 PHP
 
 # .env must exist before WP-CLI loads wp-config.php (WP_HOME comes from it).

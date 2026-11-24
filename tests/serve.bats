@@ -4,14 +4,14 @@ load helpers
 
 setup() {
 	common_setup
-	SITE="$SANDBOXWP_HOME/demo"
-	mkdir -p "$SITE/.sandboxwp-bin"
-	cp "$SBX_REPO/scripts/serve.sh" "$SBX_REPO/scripts/lib.sh" "$SBX_REPO/scripts/router.php" "$SITE/.sandboxwp-bin/"
+	SITE="$CLOSEHUB_SANDBOX_HOME/demo"
+	mkdir -p "$SITE/.closehub-sandbox-bin"
+	cp "$SBX_REPO/scripts/serve.sh" "$SBX_REPO/scripts/lib.sh" "$SBX_REPO/scripts/router.php" "$SITE/.closehub-sandbox-bin/"
 }
 
 teardown() { common_teardown; }
 
-SERVE() { bash "$SITE/.sandboxwp-bin/serve.sh" "$@"; }
+SERVE() { bash "$SITE/.closehub-sandbox-bin/serve.sh" "$@"; }
 
 @test "fails without a site .env" {
 	run SERVE
@@ -20,14 +20,14 @@ SERVE() { bash "$SITE/.sandboxwp-bin/serve.sh" "$@"; }
 }
 
 @test "rejects an unknown backend" {
-	printf 'SANDBOXWP_PORT=18991\nSANDBOXWP_BACKEND=apache\n' >"$SITE/.env"
+	printf 'CLOSEHUB_SANDBOX_PORT=18991\nCLOSEHUB_SANDBOX_BACKEND=apache\n' >"$SITE/.env"
 	run SERVE
 	[ "$status" -ne 0 ]
 	[[ "$output" == *"unknown backend"* ]]
 }
 
-@test "defaults the site to the directory that contains .sandboxwp-bin" {
-	printf 'SANDBOXWP_PORT=18992\nSANDBOXWP_BACKEND=playground\nSANDBOXWP_TYPE=none\n' >"$SITE/.env"
+@test "defaults the site to the directory that contains .closehub-sandbox-bin" {
+	printf 'CLOSEHUB_SANDBOX_PORT=18992\nCLOSEHUB_SANDBOX_BACKEND=playground\nCLOSEHUB_SANDBOX_TYPE=none\n' >"$SITE/.env"
 	stubs="$(stub_cmd npx 'echo "npx $* in $PWD"')"
 	PATH="$stubs:$(minimal_path)" run SERVE
 	[ "$status" -eq 0 ]
@@ -37,7 +37,7 @@ SERVE() { bash "$SITE/.sandboxwp-bin/serve.sh" "$@"; }
 }
 
 @test "playground mounts the project when it is a plugin or theme" {
-	printf 'SANDBOXWP_PORT=18993\nSANDBOXWP_BACKEND=playground\nSANDBOXWP_TYPE=plugin\nSANDBOXWP_PROJECT=%s\n' "$PROJECT" >"$SITE/.env"
+	printf 'CLOSEHUB_SANDBOX_PORT=18993\nCLOSEHUB_SANDBOX_BACKEND=playground\nCLOSEHUB_SANDBOX_TYPE=plugin\nCLOSEHUB_SANDBOX_PROJECT=%s\n' "$PROJECT" >"$SITE/.env"
 	stubs="$(stub_cmd npx 'echo "npx $* in $PWD"')"
 	PATH="$stubs:$(minimal_path)" run SERVE
 	[ "$status" -eq 0 ]

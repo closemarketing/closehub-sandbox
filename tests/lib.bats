@@ -15,9 +15,9 @@ teardown() { common_teardown; }
 	[ "$(sbx_slug '--Close--Theme--')" = "close-theme" ]
 }
 
-@test "sbx_home defaults to ~/SandBox and honours SANDBOXWP_HOME" {
+@test "sbx_home defaults to ~/SandBox and honours CLOSEHUB_SANDBOX_HOME" {
 	[ "$(sbx_home)" = "$TEST_TMP/SandBox" ]
-	unset SANDBOXWP_HOME
+	unset CLOSEHUB_SANDBOX_HOME
 	[ "$(sbx_home)" = "$HOME/SandBox" ]
 }
 

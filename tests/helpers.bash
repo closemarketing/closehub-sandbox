@@ -4,7 +4,7 @@ SBX_REPO="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
 common_setup() {
 	TEST_TMP="$(mktemp -d)"
-	export SANDBOXWP_HOME="$TEST_TMP/SandBox"
+	export CLOSEHUB_SANDBOX_HOME="$TEST_TMP/SandBox"
 	PROJECT="$TEST_TMP/project"
 	mkdir -p "$PROJECT"
 }

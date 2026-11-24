@@ -1,19 +1,19 @@
 ---
-name: sandboxwp-ai
+name: closehub-sandbox
 description: "Use this skill to create, start, inspect or remove a local WordPress sandbox (PHP built-in server + SQLite, no Docker/MySQL) for the plugin or theme in the current repo, and preview it in Claude's built-in browser via .claude/launch.json. Triggers on: 'local WordPress', 'WordPress sandbox', 'spin up WordPress', 'test this plugin locally', 'preview this theme', 'entorno local de WordPress', 'monta un WordPress', 'sandbox de WordPress', 'levanta el sitio local', '/wp-local'."
 ---
 
-# sandboxwp-ai
+# closehub-sandbox
 
 Local WordPress sandboxes for the project in the current directory. They run on `php -S` with the
 SQLite drop-in, or on WordPress Playground. **Where the site is created is always the user's choice**:
 the current directory when it is empty and not a plugin/theme, `~/SandBox/<name>` by default
-(`SANDBOXWP_HOME` changes the base), or any path they give. Below, `<site>` is that directory
-(it is in the `runtimeArgs` of the `sandboxwp-*` entry in `.claude/launch.json`).
+(`CLOSEHUB_SANDBOX_HOME` changes the base), or any path they give. Below, `<site>` is that directory
+(it is in the `runtimeArgs` of the `closehub-sandbox-*` entry in `.claude/launch.json`).
 
 ## Create or reuse a sandbox
 
-Follow the `/sandboxwp-ai:wp-local` command (`${CLAUDE_PLUGIN_ROOT}/commands/wp-local.md`). Key rules:
+Follow the `/closehub-sandbox:wp-local` command (`${CLAUDE_PLUGIN_ROOT}/commands/wp-local.md`). Key rules:
 
 - **Project type comes from the project's `AGENTS.md`/`CLAUDE.md`** (plugin, theme, or none). Pass it
   as `--type`. Only without that file fall back to the script's header detection.
@@ -22,17 +22,17 @@ Follow the `/sandboxwp-ai:wp-local` command (`${CLAUDE_PLUGIN_ROOT}/commands/wp-
 - Run `scripts/setup.sh --dir <chosen>`, then `scripts/launch.sh`, then `preview_start` with the printed name.
 - For a website (type `none`) without `AGENTS.md`: ask what it is about, the kind of site and the
   language in the same question round, and write `<site>/AGENTS.md` from `templates/site-AGENTS.md`.
-- Login is always `admin` / `password` (overridable with `SANDBOXWP_ADMIN_USER` / `SANDBOXWP_ADMIN_PASSWORD`).
+- Login is always `admin` / `password` (overridable with `CLOSEHUB_SANDBOX_ADMIN_USER` / `CLOSEHUB_SANDBOX_ADMIN_PASSWORD`).
 
 ## Day-to-day operations
 
 | Need | How |
 |---|---|
-| Start a stopped sandbox | `preview_start` with `sandboxwp-<name>` (launch.json already exists) |
+| Start a stopped sandbox | `preview_start` with `closehub-sandbox-<name>` (launch.json already exists) |
 | Stop it | `preview_stop` |
 | WP-CLI on the sandbox | `wp --path="<site>" <command>` (php backend only) |
 | PHP errors | `<site>/wp-content/debug.log` (`WP_DEBUG_LOG` on, display off) |
-| Port in use | Change `SANDBOXWP_PORT`, `WP_HOME`, `WP_SITEURL` in the site `.env`, re-run `launch.sh` |
+| Port in use | Change `CLOSEHUB_SANDBOX_PORT`, `WP_HOME`, `WP_SITEURL` in the site `.env`, re-run `launch.sh` |
 | Remove a sandbox | Confirm with the user first (deletes the database), then `preview_stop`, delete `<site>` (if the site is the project directory itself, delete only the WordPress files, never `.claude`, `.git` or docs) and remove its entry from `.claude/launch.json` |
 
 ## Limits to tell the user about when relevant
