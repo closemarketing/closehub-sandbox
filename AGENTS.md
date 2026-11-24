@@ -11,12 +11,20 @@ Generic and public: it must work for any WordPress developer, not only CLOSE.
 
 ### Scope
 
-- **v1 (current):** empty local site. `/closehub-sandbox:wp-local` creates the site, writes `.env` and
+- **Empty site:** `/closehub-sandbox:wp-local` creates the site, writes `.env` and
   `.claude/launch.json`, mounts the current repo if it is a plugin or theme, and starts the preview.
-- **v2 (roadmap):** `--from <site>` imports structure and content from a live site through the
-  CloseHub Connector MCP. Sanitising is mandatory and on by default: empty integration API keys
-  (ERP/CRM/payment options), disable WP-Cron and outgoing email, anonymise customer/user PII,
-  `search-replace` production URLs to the local URL. Never point a sandbox at production services.
+- **Clone (`--from <site>`):** imports a live site's database through CloseHub Connector +
+  `closehub-connector-export` (private addon, MCP abilities `closehub-export/*`). `import.sh`
+  downloads the chunks with the export ticket, runs them through the SQLite driver, switches to the
+  production table prefix, replaces production URLs, installs the same plugins/theme from
+  WordPress.org, and applies the safety layer.
+- **Safety on clones is mandatory:** the `closehub-sandbox-safety` mu-plugin blocks outgoing email
+  and every outgoing HTTP request except WordPress.org (integration API keys are copied as they
+  are, so nothing may reach ERP/CRM/payment APIs), `DISABLE_WP_CRON` is on, and the dump is deleted
+  after import. Anonymizing personal data is opt-in (`anonymize`), as decided. Never weaken this
+  layer by default.
+- **Planned:** files (uploads, premium plugins/themes) via the export addon. Until then, plugins
+  and themes that aren't on WordPress.org are reported as pending.
 
 ## Requirements
 
@@ -37,6 +45,9 @@ scripts/setup.sh                  Creates the site (core, SQLite drop-in, config
 scripts/serve.sh                  Starts the server; this is what launch.json runs
 scripts/launch.sh                 .claude/launch.json entries: add (--site), --list (ok|missing), --remove NAME
 scripts/remove.sh                 Deletes a sandbox (--yes required; refuses non-sandbox dirs; stops its server)
+scripts/import.sh                 --from: download export job, import, URLs, plugins/theme, safety, login
+scripts/import-sql.php            Runs a MySQL dump through $wpdb (SQLite driver) via wp eval-file
+templates/closehub-sandbox-safety.php  mu-plugin for clones: blocks email and outgoing HTTP (allowlist)
 scripts/router.php                Router for php -S (pretty permalinks, static files)
 templates/env.example             Variables written to the site .env
 templates/wp-config-env.php       Loads .env into constants from wp-config.php

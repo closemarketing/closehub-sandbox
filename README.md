@@ -88,10 +88,25 @@ bash ~/SandBox/<name>/.closehub-sandbox-bin/serve.sh    # start the server outsi
 - The Playground backend does not keep WordPress state between runs.
 - `preview_start` exists in the Claude desktop app; in the CLI, run `serve.sh` yourself.
 
+## Cloning a live site
+
+```
+/closehub-sandbox:wp-local --from example.com
+```
+
+Requires the site connected over MCP with [CloseHub Connector](https://wordpress.org/plugins/closehub-connector/)
+and the `closehub-connector-export` addon. The database is downloaded in chunks with a short-lived
+ticket, imported into SQLite, production URLs are replaced and the same plugins/theme are installed
+from WordPress.org (premium ones are reported as pending).
+
+Clones are locked down: outgoing email and every outgoing HTTP request except WordPress.org are
+blocked (and logged to `wp-content/debug.log`), WP-Cron is off, and the dump is deleted after the
+import. API keys of integrations are copied as they are — that's why outgoing HTTP is blocked.
+Allow a host with `CLOSEHUB_SANDBOX_ALLOW_HOSTS=api.example.com` in the site `.env`.
+
 ## Roadmap
 
-- `--from <site>`: import structure and content from a live site through an MCP connector, with
-  mandatory sanitising (integration keys emptied, cron and email off, PII anonymised).
+- Files: uploads and premium plugins/themes through the export addon.
 
 ## Development
 
