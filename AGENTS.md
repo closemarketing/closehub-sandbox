@@ -18,6 +18,11 @@ Generic and public: it must work for any WordPress developer, not only CLOSE.
   downloads the chunks with the export ticket, runs them through the SQLite driver, switches to the
   production table prefix, replaces production URLs, installs the same plugins/theme from
   WordPress.org, and applies the safety layer.
+- **Production-only plugins** (cache, security/anti-spam, SMTP, CDN, backups, management agents)
+  listed in `templates/production-plugins.txt` are not installed and are removed from
+  `active_plugins` on clones. Per import: `--keep-plugins` / `--remove-plugins`; preview with
+  `import.sh --manifest M --print-removed`. Add slugs to the list only after checking them on
+  WordPress.org (premium ones by folder name).
 - **Safety on clones is mandatory:** the `closehub-sandbox-safety` mu-plugin blocks outgoing email
   and every outgoing HTTP request except WordPress.org (integration API keys are copied as they
   are, so nothing may reach ERP/CRM/payment APIs), `DISABLE_WP_CRON` is on, and the dump is deleted
@@ -48,6 +53,7 @@ scripts/remove.sh                 Deletes a sandbox (--yes required; refuses non
 scripts/import.sh                 --from: download export job, import, URLs, plugins/theme, safety, login
 scripts/import-sql.php            Runs a MySQL dump through $wpdb (SQLite driver) via wp eval-file
 templates/closehub-sandbox-safety.php  mu-plugin for clones: blocks email and outgoing HTTP (allowlist)
+templates/production-plugins.txt   Plugin folders dropped from clones (cache, security, SMTP, backups...)
 scripts/router.php                Router for php -S (pretty permalinks, static files)
 templates/env.example             Variables written to the site .env
 templates/wp-config-env.php       Loads .env into constants from wp-config.php

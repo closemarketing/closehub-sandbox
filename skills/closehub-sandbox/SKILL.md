@@ -42,6 +42,8 @@ Follow the `/closehub-sandbox:wp-local` command (`${CLAUDE_PLUGIN_ROOT}/commands
 - Playground backend: fast to start, but its WordPress state is not persisted between runs.
 - Clones (`--from`): plugins/themes not on WordPress.org are missing until added by hand; outgoing
   email and HTTP (except WordPress.org) are blocked and WP-Cron is off on purpose.
+- Clones drop production-only plugins (cache, security, SMTP, CDN, backups, management agents);
+  the user can keep any of them (`--keep-plugins`).
 
 ## Safety
 

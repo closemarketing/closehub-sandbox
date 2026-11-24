@@ -4,7 +4,13 @@
 #
 # Usage:
 #   CLOSEHUB_EXPORT_TICKET=<ticket> import.sh --site SITE_DIR --manifest MANIFEST.json \
-#     --base-url URL --job JOB_ID --tables "wp_options,wp_posts,..." [--limit 1000] [--keep-dump]
+#     --base-url URL --job JOB_ID --tables "wp_options,wp_posts,..." [--limit 1000] [--keep-dump] \
+#     [--keep-plugins a,b] [--remove-plugins c,d]
+#   import.sh --manifest MANIFEST.json --print-removed [--keep-plugins a,b] [--remove-plugins c,d]
+#
+# Production-only plugins (cache, security, SMTP, backups, management agents: see
+# templates/production-plugins.txt) are not installed and are removed from active_plugins.
+# --print-removed lists which active plugins of the manifest that applies to, and exits.
 #
 # MANIFEST.json is the output of the closehub-export/db-manifest ability. base_url, job_id, tables
 # and the ticket come from closehub-export/create-db-export. The ticket is read from the
@@ -21,8 +27,12 @@ SBX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 . "$SBX_ROOT/scripts/lib.sh"
 
 SITE="" MANIFEST="" BASE_URL="" JOB="" TABLES="" LIMIT=1000 KEEP_DUMP=0
+KEEP_PLUGINS="" REMOVE_PLUGINS="" PRINT_REMOVED=0
 while [ $# -gt 0 ]; do
 	case "$1" in
+	--keep-plugins) KEEP_PLUGINS="${2:?}"; shift 2 ;;
+	--remove-plugins) REMOVE_PLUGINS="${2:?}"; shift 2 ;;
+	--print-removed) PRINT_REMOVED=1; shift ;;
 	--site) SITE="${2:?}"; shift 2 ;;
 	--manifest) MANIFEST="${2:?}"; shift 2 ;;
 	--base-url) BASE_URL="${2:?}"; shift 2 ;;
@@ -30,10 +40,31 @@ while [ $# -gt 0 ]; do
 	--tables) TABLES="${2:?}"; shift 2 ;;
 	--limit) LIMIT="${2:?}"; shift 2 ;;
 	--keep-dump) KEEP_DUMP=1; shift ;;
-	-h | --help) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+	-h | --help) sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
 	*) sbx_die "unknown argument: $1 (see --help)" ;;
 	esac
 done
+
+# Is this plugin folder production-only? Default list, plus --remove-plugins, minus --keep-plugins.
+is_production_plugin() {
+	local slug="$1"
+	case ",$KEEP_PLUGINS," in *",$slug,"*) return 1 ;; esac
+	case ",$REMOVE_PLUGINS," in *",$slug,"*) return 0 ;; esac
+	grep -v '^[[:space:]]*#' "$SBX_ROOT/templates/production-plugins.txt" | tr -d '[:blank:]' | grep -qxF -- "$slug"
+}
+
+if [ "$PRINT_REMOVED" = 1 ]; then
+	[ -f "$MANIFEST" ] || sbx_die "manifest not found: $MANIFEST"
+	sbx_has php || sbx_die "php is required"
+	# shellcheck disable=SC2016 # PHP code, not shell
+	php -r 'foreach (json_decode(file_get_contents($argv[1]), true)["plugins"] ?? [] as $p) { echo $p["slug"], "\n"; }' "$MANIFEST" |
+		while IFS= read -r slug; do
+			if [ -n "$slug" ] && is_production_plugin "$slug"; then
+				printf '%s\n' "$slug"
+			fi
+		done
+	exit 0
+fi
 
 [ -n "$SITE" ] && [ -n "$MANIFEST" ] && [ -n "$BASE_URL" ] && [ -n "$JOB" ] && [ -n "$TABLES" ] ||
 	sbx_die "missing arguments (see --help)"
@@ -162,10 +193,16 @@ cp "$SBX_ROOT/templates/closehub-sandbox-safety.php" "$SITE/wp-content/mu-plugin
 sbx_env_set "$ENV_FILE" DISABLE_WP_CRON true
 
 # 6. Same plugins and theme from WordPress.org; a mounted repo (symlink) always wins.
+# Production-only plugins (cache, security, SMTP...) are skipped and deactivated.
 PENDING=""
+REMOVED=""
 while IFS="$(printf '\t')" read -r slug version on_wporg; do
 	[ -n "$slug" ] || continue
 	if [ -e "$SITE/wp-content/plugins/$slug" ]; then
+		continue
+	fi
+	if is_production_plugin "$slug"; then
+		REMOVED="$REMOVED $slug"
 		continue
 	fi
 	if [ "$on_wporg" = 1 ]; then
@@ -176,6 +213,20 @@ while IFS="$(printf '\t')" read -r slug version on_wporg; do
 		PENDING="$PENDING $slug"
 	fi
 done < <(manifest plugins)
+
+if [ -n "$REMOVED" ]; then
+	# shellcheck disable=SC2016 # PHP code, not shell
+	CLOSEHUB_SANDBOX_REMOVED="$REMOVED" wpcli eval '
+		$slugs  = preg_split( "/\s+/", trim( (string) getenv( "CLOSEHUB_SANDBOX_REMOVED" ) ) );
+		$active = (array) get_option( "active_plugins", array() );
+		$keep   = array_filter(
+			$active,
+			static fn( $file ) => ! in_array( str_contains( $file, "/" ) ? dirname( $file ) : basename( $file, ".php" ), $slugs, true )
+		);
+		update_option( "active_plugins", array_values( $keep ) );
+	' >&2
+	sbx_info "removed production-only plugins:$REMOVED"
+fi
 
 PENDING_THEMES=""
 while IFS="$(printf '\t')" read -r slug version on_wporg _role; do
@@ -225,3 +276,4 @@ printf 'CLOSEHUB_SANDBOX_SOURCE=%s\n' "$SOURCE_URL"
 printf 'CLOSEHUB_SANDBOX_URL=%s\n' "$LOCAL_URL"
 printf 'CLOSEHUB_SANDBOX_PENDING_PLUGINS=%s\n' "$(printf '%s' "$PENDING" | sed 's/^ //')"
 printf 'CLOSEHUB_SANDBOX_PENDING_THEMES=%s\n' "$(printf '%s' "$PENDING_THEMES" | sed 's/^ //')"
+printf 'CLOSEHUB_SANDBOX_REMOVED_PLUGINS=%s\n' "$(printf '%s' "$REMOVED" | sed 's/^ //')"

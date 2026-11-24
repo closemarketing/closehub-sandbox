@@ -57,3 +57,29 @@ ARGS() { echo --site "$SITE" --manifest "$MANIFEST" --job 0123456789abcdef --tab
 	! grep -nE 'curl[^|]*\$CLOSEHUB_EXPORT_TICKET' "$SBX_REPO/scripts/import.sh"
 	grep -q -- '--config -' "$SBX_REPO/scripts/import.sh"
 }
+
+@test "--print-removed lists the active production-only plugins of the manifest" {
+	command -v php >/dev/null || skip "php not installed"
+	echo '{"plugins":[{"slug":"woocommerce"},{"slug":"wp-rocket"},{"slug":"honeypot"},{"slug":"wp-mail-smtp"},{"slug":"wordfence"},{"slug":"modular-connector"},{"slug":"closehub-connector"}]}' >"$MANIFEST"
+	run IMPORT --manifest "$MANIFEST" --print-removed
+	[ "$status" -eq 0 ]
+	[ "$output" = "$(printf 'wp-rocket\nhoneypot\nwp-mail-smtp\nwordfence\nmodular-connector')" ]
+}
+
+@test "--keep-plugins and --remove-plugins override the default list" {
+	command -v php >/dev/null || skip "php not installed"
+	echo '{"plugins":[{"slug":"woocommerce"},{"slug":"wordfence"},{"slug":"hello-dolly"}]}' >"$MANIFEST"
+	run IMPORT --manifest "$MANIFEST" --print-removed --keep-plugins wordfence --remove-plugins hello-dolly
+	[ "$status" -eq 0 ]
+	[ "$output" = "hello-dolly" ]
+}
+
+@test "production plugin list has valid, unique slugs" {
+	list="$SBX_REPO/templates/production-plugins.txt"
+	slugs="$(grep -v '^[[:space:]]*#' "$list" | tr -d '[:blank:]' | grep -v '^$')"
+	[ -n "$slugs" ]
+	! grep -vxE '[a-z0-9-]+' <<<"$slugs"
+	[ -z "$(sort <<<"$slugs" | uniq -d)" ]
+	! grep -qx 'woocommerce' <<<"$slugs"
+	! grep -qx 'closehub-connector' <<<"$slugs"
+}

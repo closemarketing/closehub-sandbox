@@ -130,6 +130,11 @@ same AskUserQuestion round:
   plugins/themes with `on_wporg: false`. Those can't be installed and will be missing for now.
 - **Personal data:** "Exact copy" (default, as agreed) or "Anonymize customers, commenters and
   non-admin users".
+- **Production-only plugins** (cache, security/anti-spam, SMTP, CDN, backups, management agents)
+  are removed from the copy. List the active ones that apply, from
+  `bash "${CLAUDE_PLUGIN_ROOT}/scripts/import.sh" --manifest "<manifest file>" --print-removed`,
+  and let the user keep any of them ("Remove them" as the default, "Keep some" → ask which and pass
+  `--keep-plugins a,b`). If the user names extra plugins to drop, pass `--remove-plugins c,d`.
 
 Default site name: the source domain as a slug (e.g. `somos174-es`).
 
@@ -143,7 +148,8 @@ Default site name: the source domain as a slug (e.g. `somos174-es`).
 ```bash
 CLOSEHUB_EXPORT_TICKET='<ticket>' bash "${CLAUDE_PLUGIN_ROOT}/scripts/import.sh" \
   --site "<CLOSEHUB_SANDBOX_SITE>" --manifest "<manifest file>" \
-  --base-url "<base_url>" --job "<job_id>" --tables "<comma-separated table names>"
+  --base-url "<base_url>" --job "<job_id>" --tables "<comma-separated table names>" \
+  [--keep-plugins a,b] [--remove-plugins c,d]
 ```
 
 3. If it fails on a download (expired ticket, timeout), create a new export job and run it again.
@@ -156,6 +162,7 @@ CLOSEHUB_EXPORT_TICKET='<ticket>' bash "${CLAUDE_PLUGIN_ROOT}/scripts/import.sh"
 
 - Source and date of the copy, and `CLOSEHUB_SANDBOX_PENDING_PLUGINS` / `_THEMES`. Those are not
   on WordPress.org: the copy may look or behave differently until they are added by hand.
+- `CLOSEHUB_SANDBOX_REMOVED_PLUGINS`: production-only plugins left out of the copy.
 - **Safety is on:** outgoing email and every outgoing HTTP request except WordPress.org are blocked
   and logged to `debug.log`, and WP-Cron is off. Integration API keys were copied as they are, which
   is why outgoing HTTP is blocked (allow a host with `CLOSEHUB_SANDBOX_ALLOW_HOSTS` in the site `.env`).

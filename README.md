@@ -98,6 +98,9 @@ Requires the site connected over MCP with [CloseHub Connector](https://wordpress
 and the `closehub-connector-export` addon. The database is downloaded in chunks with a short-lived
 ticket, imported into SQLite, production URLs are replaced and the same plugins/theme are installed
 from WordPress.org (premium ones are reported as pending).
+Production-only plugins (cache, security/anti-spam, SMTP, CDN, backups, management agents —
+see [`templates/production-plugins.txt`](templates/production-plugins.txt)) are left out of the copy;
+you can keep any of them when Claude asks.
 
 Clones are locked down: outgoing email and every outgoing HTTP request except WordPress.org are
 blocked (and logged to `wp-content/debug.log`), WP-Cron is off, and the dump is deleted after the
