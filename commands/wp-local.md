@@ -22,9 +22,17 @@ A `--type` passed by the user always wins.
 
 ## 2. Ask where to create the site (and, for a website, what it is)
 
-**Always ask before creating anything**, unless the user already passed `--dir`, or
-`.claude/launch.json` already has a `closehub-sandbox-*` entry for this project (then reuse it: skip to
-step 3 with that site's directory from its `runtimeArgs`).
+First check for existing sandboxes of this project:
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/launch.sh" --project "$PWD" --list
+```
+
+- An entry with status `ok` → reuse it: skip to step 3 with its site directory (second column).
+- An entry with status `missing` → its site was deleted. Tell the user in one line, remove the stale
+  entry (`launch.sh --project "$PWD" --remove <name>`) and continue as for a new sandbox.
+
+**Always ask before creating anything**, unless the user already passed `--dir` or a sandbox is reused.
 
 Ask everything in **one** AskUserQuestion call. The first question is the location, with these
 options, in this order:

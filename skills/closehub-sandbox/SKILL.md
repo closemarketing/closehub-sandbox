@@ -33,7 +33,8 @@ Follow the `/closehub-sandbox:wp-local` command (`${CLAUDE_PLUGIN_ROOT}/commands
 | WP-CLI on the sandbox | `wp --path="<site>" <command>` (php backend only) |
 | PHP errors | `<site>/wp-content/debug.log` (`WP_DEBUG_LOG` on, display off) |
 | Port in use | Change `CLOSEHUB_SANDBOX_PORT`, `WP_HOME`, `WP_SITEURL` in the site `.env`, re-run `launch.sh` |
-| Remove a sandbox | Confirm with the user first (deletes the database), then `preview_stop`, delete `<site>` (if the site is the project directory itself, delete only the WordPress files, never `.claude`, `.git` or docs) and remove its entry from `.claude/launch.json` |
+| Remove a sandbox | `/closehub-sandbox:wp-remove`: confirms with the user (permanent, database included), stops the server, deletes the site (`scripts/remove.sh`, which refuses anything that is not a sandbox and never touches a mounted repo) and removes its `launch.json` entry |
+| Sandbox entry points to a deleted site | `scripts/launch.sh --list` shows it as `missing`; remove it with `launch.sh --remove <name>` |
 
 ## Limits to tell the user about when relevant
 

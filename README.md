@@ -63,6 +63,17 @@ Log in to `/wp-admin/` with **`admin` / `password`**. Override with the `CLOSEHU
 `CLOSEHUB_SANDBOX_ADMIN_PASSWORD` environment variables before creating the site. The server only listens on
 `127.0.0.1`, which is what makes a fixed login acceptable: don't expose a sandbox on the network.
 
+### Removing a sandbox
+
+```
+/closehub-sandbox:wp-remove
+```
+
+It asks which sandbox and confirms (deletion is permanent, database included), stops its server,
+removes its `.claude/launch.json` entry and deletes the site. A mounted plugin/theme repo is never
+touched: only its symlink inside the site goes. If you delete a site folder by hand, the next
+`/closehub-sandbox:wp-local` notices the stale entry and cleans it up.
+
 ### Useful commands
 
 ```bash
