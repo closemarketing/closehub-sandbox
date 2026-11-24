@@ -45,16 +45,16 @@ ENV_FILE="$SITE/.env"
 [ "$(sbx_env_get "$ENV_FILE" CLOSEHUB_SANDBOX_BACKEND)" = php ] || sbx_die "importing needs the php backend (Playground doesn't keep a database)"
 [ -f "$SITE/wp-config.php" ] || sbx_die "$SITE has no wp-config.php; run setup.sh first"
 [ -f "$MANIFEST" ] || sbx_die "manifest not found: $MANIFEST"
-if ! sbx_php_ok || ! sbx_has wp || ! sbx_has curl; then
-	sbx_die "need PHP >= $SBX_MIN_PHP, WP-CLI and curl"
-fi
-
 case "$BASE_URL" in
 https://*) ;;
 http://localhost[:/]* | http://127.0.0.1[:/]* | http://*.test[:/]* | http://*.localhost[:/]*) ;;
 *) sbx_die "refusing a non-HTTPS export URL: $BASE_URL" ;;
 esac
 BASE_URL="${BASE_URL%/}"
+
+if ! sbx_php_ok || ! sbx_has wp || ! sbx_has curl; then
+	sbx_die "need PHP >= $SBX_MIN_PHP, WP-CLI and curl"
+fi
 
 # manifest field (dot path) or a TAB-separated plugin/theme list.
 manifest() {
