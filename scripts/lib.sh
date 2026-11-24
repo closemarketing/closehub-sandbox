@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Shared helpers for sandboxwp-ai scripts. Sourced, never executed.
+# Shared helpers for closehub-sandbox scripts. Sourced, never executed.
 # Must stay compatible with bash 3.2 (macOS) and GNU/Linux.
 
 SBX_DEFAULT_PORT=8080
 SBX_MIN_PHP="8.1.0"
 
-sbx_info() { printf '[sandboxwp] %s\n' "$*" >&2; }
-sbx_warn() { printf '[sandboxwp] WARNING: %s\n' "$*" >&2; }
+sbx_info() { printf '[closehub-sandbox] %s\n' "$*" >&2; }
+sbx_warn() { printf '[closehub-sandbox] WARNING: %s\n' "$*" >&2; }
 sbx_die() {
-	printf '[sandboxwp] ERROR: %s\n' "$*" >&2
+	printf '[closehub-sandbox] ERROR: %s\n' "$*" >&2
 	exit 1
 }
 
@@ -17,12 +17,44 @@ sbx_has() { command -v "$1" >/dev/null 2>&1; }
 # Xdebug trying to reach a debugger slows every PHP call; keep it off unless the user set it.
 export XDEBUG_MODE="${XDEBUG_MODE:-off}"
 
-# Sites live in ~/SandBox/<name> (like WordPress Studio uses ~/Studio). Override with SANDBOXWP_HOME.
-sbx_home() { printf '%s\n' "${SANDBOXWP_HOME:-$HOME/SandBox}"; }
+# Sites live in ~/SandBox/<name> (like WordPress Studio uses ~/Studio). Override with CLOSEHUB_SANDBOX_HOME.
+sbx_home() { printf '%s\n' "${CLOSEHUB_SANDBOX_HOME:-$HOME/SandBox}"; }
 
 sbx_php_ok() {
 	sbx_has php || return 1
 	php -r "exit(version_compare(PHP_VERSION, '$SBX_MIN_PHP', '>=') ? 0 : 1);" 2>/dev/null
+}
+
+# Absolute path without requiring the directory to exist (it may be created later).
+sbx_abspath() {
+	local p="$1"
+	# Literal ~ (quoted by the caller): expand it ourselves.
+	# shellcheck disable=SC2088
+	case "$p" in
+	"~") p="$HOME" ;;
+	"~/"*) p="$HOME/${p#\~/}" ;;
+	/*) ;;
+	*) p="$PWD/$p" ;;
+	esac
+	if [ -d "$p" ]; then
+		(cd "$p" && pwd)
+	else
+		printf '%s\n' "${p%/}"
+	fi
+}
+
+# 0 if a directory has nothing that WordPress files could clash with. Agent/editor/VCS files are fine.
+sbx_dir_is_free() {
+	local dir="$1" f
+	[ -d "$dir" ] || return 0
+	for f in "$dir"/* "$dir"/.[!.]* "$dir"/..?*; do
+		[ -e "$f" ] || [ -L "$f" ] || continue
+		case "$(basename "$f")" in
+		.claude | .DS_Store | .git | .gitignore | .gitattributes | AGENTS.md | CLAUDE.md | README.md) ;;
+		*) return 1 ;;
+		esac
+	done
+	return 0
 }
 
 # Lowercase slug safe for directory names and WordPress plugin/theme slugs.
@@ -46,13 +78,6 @@ sbx_free_port() {
 		port=$((port + 1))
 	done
 	return 1
-}
-
-sbx_random_password() {
-	local pw
-	pw="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c 24 || true)"
-	[ -n "$pw" ] || sbx_die "could not generate a password"
-	printf '%s\n' "$pw"
 }
 
 # Detect what the project is from its files: plugin | theme | none | ambiguous.

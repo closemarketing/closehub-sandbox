@@ -4,9 +4,9 @@ load helpers
 
 setup() {
 	common_setup
-	SITE="$SANDBOXWP_HOME/demo"
+	SITE="$CLOSEHUB_SANDBOX_HOME/demo"
 	mkdir -p "$SITE"
-	printf 'SANDBOXWP_NAME=demo\nSANDBOXWP_PORT=8123\n' >"$SITE/.env"
+	printf 'CLOSEHUB_SANDBOX_NAME=demo\nCLOSEHUB_SANDBOX_PORT=8123\n' >"$SITE/.env"
 }
 
 teardown() { common_teardown; }
@@ -20,14 +20,14 @@ json_get() {
 @test "creates launch.json when missing and prints the configuration name" {
 	run LAUNCH --project "$PROJECT" --site "$SITE"
 	[ "$status" -eq 0 ]
-	[ "${lines[${#lines[@]}-1]}" = "sandboxwp-demo" ]
+	[ "${lines[${#lines[@]}-1]}" = "closehub-sandbox-demo" ]
 	f="$PROJECT/.claude/launch.json"
 	[ -f "$f" ]
 	run json_get "$f"
-	[[ "$output" == *'"name":"sandboxwp-demo"'* ]]
+	[[ "$output" == *'"name":"closehub-sandbox-demo"'* ]]
 	[[ "$output" == *'"runtimeExecutable":"bash"'* ]]
 	[[ "$output" == *"\"port\":8123"* ]]
-	[[ "$output" == *"$SITE/.sandboxwp-bin/serve.sh"* ]]
+	[[ "$output" == *"$SITE/.closehub-sandbox-bin/serve.sh"* ]]
 }
 
 @test "keeps other configurations and does not duplicate its own" {
@@ -37,7 +37,7 @@ json_get() {
 	LAUNCH --project "$PROJECT" --site "$SITE" >/dev/null 2>&1
 	run json_get "$PROJECT/.claude/launch.json"
 	[[ "$output" == *'"name":"vite"'* ]]
-	[ "$(grep -o 'sandboxwp-demo' <<<"$output" | wc -l | tr -d ' ')" -eq 1 ]
+	[ "$(grep -o 'closehub-sandbox-demo' <<<"$output" | wc -l | tr -d ' ')" -eq 1 ]
 }
 
 @test "fails when the site has no .env" {

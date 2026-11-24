@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Start the server of a sandbox. This is what .claude/launch.json runs.
-# setup.sh copies this file (with lib.sh and router.php) into <site>/.sandboxwp-bin/.
+# setup.sh copies this file (with lib.sh and router.php) into <site>/.closehub-sandbox-bin/.
 #
 # Usage: serve.sh [SITE_DIR]   (defaults to the site that contains this script)
 set -euo pipefail
@@ -15,11 +15,11 @@ SITE="$(cd "$SITE" && pwd)"
 ENV_FILE="$SITE/.env"
 sbx_env_load "$ENV_FILE" || sbx_die "missing $ENV_FILE; run setup.sh first"
 
-PORT="${SANDBOXWP_PORT:?SANDBOXWP_PORT missing in $ENV_FILE}"
-BACKEND="${SANDBOXWP_BACKEND:-php}"
+PORT="${CLOSEHUB_SANDBOX_PORT:?CLOSEHUB_SANDBOX_PORT missing in $ENV_FILE}"
+BACKEND="${CLOSEHUB_SANDBOX_BACKEND:-php}"
 
 if sbx_port_in_use "$PORT"; then
-	sbx_die "port $PORT is already in use; stop the other server or change SANDBOXWP_PORT (and launch.json)"
+	sbx_die "port $PORT is already in use; stop the other server or change CLOSEHUB_SANDBOX_PORT (and launch.json)"
 fi
 
 case "$BACKEND" in
@@ -35,14 +35,14 @@ php)
 	;;
 playground)
 	sbx_has npx || sbx_die "Node.js (npx) is required for the playground backend"
-	VERSION="${SANDBOXWP_PLAYGROUND_VERSION:-latest}"
+	VERSION="${CLOSEHUB_SANDBOX_PLAYGROUND_VERSION:-latest}"
 	# --auto-mount mounts the cwd as plugin/theme; only do it when the project is one.
-	if [ "${SANDBOXWP_TYPE:-none}" = none ]; then
+	if [ "${CLOSEHUB_SANDBOX_TYPE:-none}" = none ]; then
 		set -- --port="$PORT" --login
 		cd "$SITE"
 	else
 		set -- --port="$PORT" --auto-mount --login
-		cd "${SANDBOXWP_PROJECT:?SANDBOXWP_PROJECT missing in $ENV_FILE}"
+		cd "${CLOSEHUB_SANDBOX_PROJECT:?CLOSEHUB_SANDBOX_PROJECT missing in $ENV_FILE}"
 	fi
 	sbx_info "serving with WordPress Playground on http://localhost:$PORT"
 	exec npx -y "@wp-playground/cli@$VERSION" server "$@"

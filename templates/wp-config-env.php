@@ -1,25 +1,25 @@
 <?php
 /**
- * Loaded from wp-config.php by sandboxwp-ai. Reads the sandbox .env and defines
+ * Loaded from wp-config.php by closehub-sandbox. Reads the sandbox .env and defines
  * the WordPress constants it contains. Never used in production.
  */
 
-$sandboxwp_env_file = __DIR__ . '/.env';
+$closehub_sandbox_env_file = __DIR__ . '/.env';
 
-if ( is_readable( $sandboxwp_env_file ) ) {
-	foreach ( file( $sandboxwp_env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES ) as $sandboxwp_line ) {
-		if ( '#' === $sandboxwp_line[0] || false === strpos( $sandboxwp_line, '=' ) ) {
+if ( is_readable( $closehub_sandbox_env_file ) ) {
+	foreach ( file( $closehub_sandbox_env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES ) as $closehub_sandbox_line ) {
+		if ( '#' === $closehub_sandbox_line[0] || false === strpos( $closehub_sandbox_line, '=' ) ) {
 			continue;
 		}
-		list( $sandboxwp_key, $sandboxwp_value ) = explode( '=', $sandboxwp_line, 2 );
-		$_ENV[ $sandboxwp_key ] = $sandboxwp_value;
+		list( $closehub_sandbox_key, $closehub_sandbox_value ) = explode( '=', $closehub_sandbox_line, 2 );
+		$_ENV[ $closehub_sandbox_key ] = $closehub_sandbox_value;
 	}
 }
 
-$sandboxwp_constants = array( 'WP_HOME', 'WP_SITEURL', 'WP_ENVIRONMENT_TYPE' );
-foreach ( $sandboxwp_constants as $sandboxwp_constant ) {
-	if ( ! defined( $sandboxwp_constant ) && ! empty( $_ENV[ $sandboxwp_constant ] ) ) {
-		define( $sandboxwp_constant, $_ENV[ $sandboxwp_constant ] );
+$closehub_sandbox_constants = array( 'WP_HOME', 'WP_SITEURL', 'WP_ENVIRONMENT_TYPE' );
+foreach ( $closehub_sandbox_constants as $closehub_sandbox_constant ) {
+	if ( ! defined( $closehub_sandbox_constant ) && ! empty( $_ENV[ $closehub_sandbox_constant ] ) ) {
+		define( $closehub_sandbox_constant, $_ENV[ $closehub_sandbox_constant ] );
 	}
 }
 
@@ -34,4 +34,4 @@ if ( ! defined( 'WP_DEBUG_DISPLAY' ) ) {
 	define( 'WP_DEBUG_DISPLAY', false );
 }
 
-unset( $sandboxwp_env_file, $sandboxwp_line, $sandboxwp_key, $sandboxwp_value, $sandboxwp_constants, $sandboxwp_constant );
+unset( $closehub_sandbox_env_file, $closehub_sandbox_line, $closehub_sandbox_key, $closehub_sandbox_value, $closehub_sandbox_constants, $closehub_sandbox_constant );

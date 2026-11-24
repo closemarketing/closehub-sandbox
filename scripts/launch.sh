@@ -24,9 +24,9 @@ done
 PROJECT="$(cd "$PROJECT" && pwd)"
 SITE="$(cd "$SITE" && pwd)"
 
-NAME="sandboxwp-$(sbx_env_get "$SITE/.env" SANDBOXWP_NAME)"
-PORT="$(sbx_env_get "$SITE/.env" SANDBOXWP_PORT)"
-SERVE="$SITE/.sandboxwp-bin/serve.sh"
+NAME="closehub-sandbox-$(sbx_env_get "$SITE/.env" CLOSEHUB_SANDBOX_NAME)"
+PORT="$(sbx_env_get "$SITE/.env" CLOSEHUB_SANDBOX_PORT)"
+SERVE="$SITE/.closehub-sandbox-bin/serve.sh"
 FILE="$PROJECT/.claude/launch.json"
 mkdir -p "$PROJECT/.claude"
 

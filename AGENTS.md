@@ -1,8 +1,8 @@
-# AGENTS.md — sandboxwp-ai
+# AGENTS.md — closehub-sandbox
 
 ## Overview
 
-`sandboxwp-ai` is a **Claude Code plugin** that spins up a local WordPress site without leaving Claude:
+`closehub-sandbox` is a **Claude Code plugin** that spins up a local WordPress site without leaving Claude:
 no Docker, no MySQL. WordPress runs on the PHP built-in server (`php -S`) with the official
 SQLite drop-in (`sqlite-database-integration`), and Claude opens it in its built-in browser through
 `.claude/launch.json` + `preview_start`.
@@ -11,7 +11,7 @@ Generic and public: it must work for any WordPress developer, not only CLOSE.
 
 ### Scope
 
-- **v1 (current):** empty local site. `/sandboxwp-ai:wp-local` creates the site, writes `.env` and
+- **v1 (current):** empty local site. `/closehub-sandbox:wp-local` creates the site, writes `.env` and
   `.claude/launch.json`, mounts the current repo if it is a plugin or theme, and starts the preview.
 - **v2 (roadmap):** `--from <site>` imports structure and content from a live site through the
   CloseHub Connector MCP. Sanitising is mandatory and on by default: empty integration API keys
@@ -29,15 +29,16 @@ Generic and public: it must work for any WordPress developer, not only CLOSE.
 ```
 .claude-plugin/plugin.json        Plugin manifest (name, version)
 .claude-plugin/marketplace.json   Single-plugin marketplace (install from this repo)
-commands/wp-local.md              /sandboxwp-ai:wp-local — orchestrates the flow below
-skills/sandboxwp-ai/SKILL.md      Auto-triggered guidance ("local WordPress", "sandbox"...)
+commands/wp-local.md              /closehub-sandbox:wp-local — orchestrates the flow below
+skills/closehub-sandbox/SKILL.md      Auto-triggered guidance ("local WordPress", "sandbox"...)
 scripts/lib.sh                    Shared helpers: logging, dependency checks, free port, .env I/O
 scripts/setup.sh                  Creates the site (core, SQLite drop-in, config, install, mount)
 scripts/serve.sh                  Starts the server; this is what launch.json runs
-scripts/launch.sh                 Merges the sandboxwp entry into .claude/launch.json
+scripts/launch.sh                 Merges the closehub-sandbox entry into .claude/launch.json
 scripts/router.php                Router for php -S (pretty permalinks, static files)
 templates/env.example             Variables written to the site .env
 templates/wp-config-env.php       Loads .env into constants from wp-config.php
+templates/site-AGENTS.md          AGENTS.md skeleton for website sandboxes (filled by the command)
 tests/*.bats                      bats tests for scripts
 ```
 
@@ -46,15 +47,37 @@ Flow: `setup.sh` → `launch.sh` → `preview_start` (Claude tool) → `serve.sh
 Layout created on disk:
 
 ```
-~/SandBox/<name>/                 WordPress install (override base dir with SANDBOXWP_HOME)
-~/SandBox/<name>/.env             Port, URLs, generated admin credentials (chmod 600)
-~/SandBox/<name>/.sandboxwp-bin/  Copies of serve.sh, lib.sh, router.php (launch.json points here)
-<project>/.claude/launch.json     "sandboxwp-<name>" configuration
+~/SandBox/<name>/                 WordPress install (override base dir with CLOSEHUB_SANDBOX_HOME)
+<site>/.env                      Port, URLs, admin login (chmod 600)
+<site>/.closehub-sandbox-bin/            Copies of serve.sh, lib.sh, router.php (launch.json points here)
+<site>/AGENTS.md                  Only for websites (type none): what the site is, how to run it
+<project>/.claude/launch.json     "closehub-sandbox-<name>" configuration
 ```
 
-Sites live outside the project on purpose: the project is symlinked into the site, so a site inside
-the project would create a symlink loop and put WordPress core in the repo. The launch.json points
-at the copied `serve.sh` inside the site, so it keeps working when the plugin is updated.
+### Where the site goes: always the user's choice
+
+The command **asks before creating anything** (unless `--dir` was given or a sandbox already exists):
+
+1. The current directory, offered first only when the project type is `none` and the directory is
+   empty apart from `.claude`, `.git*`, `AGENTS.md`, `CLAUDE.md`, `README.md`, `.DS_Store`
+   (e.g. the user made `~/Studio/my-shop` and ran the command there).
+2. `~/SandBox/<name>` (base dir overridable with `CLOSEHUB_SANDBOX_HOME`).
+3. Any path the user types.
+
+`setup.sh --dir` enforces the rules: the directory must be empty (same allowlist), must not hold a
+WordPress install it didn't create (Studio, Local...), and for plugin/theme projects must be outside
+the project, which is symlinked into the site (a site inside it would be a symlink loop). Inside a
+git checkout it adds `.env`, `.closehub-sandbox-bin/`, `wp-content/database/` to `.gitignore`.
+
+The launch.json points at the copied `serve.sh` inside the site, so it keeps working when the plugin
+is updated.
+
+### Website AGENTS.md
+
+When the type is `none` (a website, not a plugin/theme) and the site has no `AGENTS.md`, the command
+asks what the website is about (business, kind of site, language) together with the location, passes
+`--title`/`--locale` to `setup.sh`, and writes `<site>/AGENTS.md` from `templates/site-AGENTS.md`.
+An existing `AGENTS.md` is never overwritten.
 
 ### Project type (plugin / theme / none)
 
@@ -80,8 +103,10 @@ and activated. `--type` always wins over detection.
   Must run on both macOS (BSD `sed`, `stat`, bash 3.2) and Linux (GNU). No `sed -i` without a
   portable wrapper, no associative arrays, no `readarray`.
 - **No network or global state in tests:** tests stub `wp`, `php` and `npx` via `PATH`.
-- **Never** commit secrets, `.env`, generated credentials or client data. Generated credentials live
-  only in the site `.env` and are shown to the user once; agents must not repeat them in chat.
+- **Never** commit secrets, `.env` or client data.
+- **Admin login is always `admin` / `password`** (overridable with `CLOSEHUB_SANDBOX_ADMIN_USER` /
+  `CLOSEHUB_SANDBOX_ADMIN_PASSWORD`). This is deliberate for local development and safe only because the
+  server binds to `127.0.0.1`. Never bind to `0.0.0.0` or add tunnelling/sharing features.
 - The plugin must never write outside the user's project, except caches managed by WP-CLI/npm.
 
 ## Commands
@@ -105,7 +130,7 @@ claude --plugin-dir .            # load the plugin locally for manual E2E
 ### Manual verification (behaviour bats cannot cover)
 
 After changing the command, skill or server flow, run an E2E in a scratch plugin repo:
-`/sandboxwp-ai:wp-local` → preview opens → `wp-login.php` answers 200 → login works → the repo
+`/closehub-sandbox:wp-local` → preview opens → `wp-login.php` answers 200 → login works → the repo
 plugin is active → a pretty permalink resolves. Repeat with `--backend playground` when touching it.
 
 ## Git workflow
@@ -123,8 +148,8 @@ plugin is active → a pretty permalink resolves. Repeat with `--backend playgro
    git tag vX.Y.Z && git push origin vX.Y.Z
    gh release create vX.Y.Z --notes-from-tag
    ```
-Users install or update with `/plugin marketplace add closemarketing/sandboxwp-ai` and
-`/plugin install sandboxwp-ai@sandboxwp-ai`.
+Users install or update with `/plugin marketplace add closemarketing/closehub-sandbox` and
+`/plugin install closehub-sandbox@closehub-sandbox`.
 
 ## Known limits
 
