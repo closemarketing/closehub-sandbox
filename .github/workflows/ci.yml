@@ -1,0 +1,71 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-test:
+    name: shellcheck + bats
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Install bats and shellcheck
+        run: sudo apt-get update && sudo apt-get install -y bats shellcheck
+      - name: shellcheck
+        run: shellcheck -x scripts/*.sh
+      - name: bats
+        run: bats tests/
+
+  smoke:
+    name: real install (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_sqlite, sqlite3
+          tools: wp-cli
+          coverage: none
+      - name: Create a fixture plugin
+        run: |
+          mkdir -p "$RUNNER_TEMP/smoke-plugin"
+          cat > "$RUNNER_TEMP/smoke-plugin/smoke-plugin.php" <<'PHP'
+          <?php
+          /**
+           * Plugin Name: Smoke Plugin
+           */
+          add_action( 'wp_footer', function () { echo 'SANDBOXWP-SMOKE'; } );
+          PHP
+      - name: setup.sh
+        env:
+          SANDBOXWP_HOME: ${{ runner.temp }}/SandBox
+        run: bash scripts/setup.sh --project "$RUNNER_TEMP/smoke-plugin" --port 8181
+      - name: serve.sh + HTTP checks
+        env:
+          SANDBOXWP_HOME: ${{ runner.temp }}/SandBox
+        run: |
+          site="$SANDBOXWP_HOME/smoke-plugin"
+          bash "$site/.sandboxwp-bin/serve.sh" > "$RUNNER_TEMP/serve.log" 2>&1 &
+          for i in $(seq 1 30); do curl -s -o /dev/null http://localhost:8181/ && break; sleep 1; done
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8181/wp-login.php)" = 200
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8181/.env)" = 403
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8181/hello-world/)" = 200
+          curl -s http://localhost:8181/ | grep -q SANDBOXWP-SMOKE
+          wp --path="$site" plugin is-active smoke-plugin
+      - name: Server log on failure
+        if: failure()
+        run: cat "$RUNNER_TEMP/serve.log" || true

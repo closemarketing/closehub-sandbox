@@ -1,0 +1,4 @@
+.DS_Store
+.env
+.sandboxwp/
+node_modules/

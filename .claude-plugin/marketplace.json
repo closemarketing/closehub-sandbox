@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "sandboxwp-ai",
+  "description": "Local WordPress sandboxes for Claude Code: PHP built-in server + SQLite, opened in Claude's browser.",
+  "owner": {
+    "name": "Close",
+    "url": "https://github.com/closemarketing"
+  },
+  "plugins": [
+    {
+      "name": "sandboxwp-ai",
+      "description": "Spin up a local WordPress sandbox (PHP + SQLite) for the plugin or theme you are developing and preview it without leaving Claude.",
+      "version": "0.1.0",
+      "source": "./",
+      "category": "development"
+    }
+  ]
+}
