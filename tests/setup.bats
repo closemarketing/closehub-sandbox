@@ -94,3 +94,58 @@ SETUP() { bash "$SBX_REPO/scripts/setup.sh" "$@"; }
 	[[ "$output" == *"already exists"* ]]
 	[[ "$output" == *"SANDBOXWP_PORT=9126"* ]]
 }
+
+@test "--dir creates the site in the chosen directory, e.g. the current empty one" {
+	site="$TEST_TMP/Studio/mitiendademunecas"
+	mkdir -p "$site/.claude"
+	stubs="$(stub_cmd npx 'exit 0')"
+	PATH="$stubs:$(minimal_path)" run SETUP --project "$site" --dir "$site" --backend playground --port 9130
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"SANDBOXWP_SITE=$site"* ]]
+	[[ "$output" == *"SANDBOXWP_NAME=mitiendademunecas"* ]]
+	[ -f "$site/.env" ]
+	[ ! -d "$SANDBOXWP_HOME" ]
+}
+
+@test "--dir refuses a non-empty directory" {
+	site="$TEST_TMP/busy"
+	mkdir -p "$site"
+	touch "$site/index.html"
+	stubs="$(stub_cmd npx 'exit 0')"
+	PATH="$stubs:$(minimal_path)" run SETUP --project "$site" --dir "$site" --backend playground
+	[ "$status" -ne 0 ]
+	[[ "$output" == *"not empty"* ]]
+}
+
+@test "--dir refuses an existing WordPress install it did not create" {
+	site="$TEST_TMP/studio-site"
+	mkdir -p "$site"
+	touch "$site/wp-config.php"
+	stubs="$(stub_cmd npx 'exit 0')"
+	PATH="$stubs:$(minimal_path)" run SETUP --project "$site" --dir "$site" --backend playground
+	[ "$status" -ne 0 ]
+	[[ "$output" == *"not created by sandboxwp-ai"* ]]
+}
+
+@test "--dir refuses a site inside the plugin it mounts" {
+	make_plugin "$PROJECT"
+	stubs="$(stub_cmd npx 'exit 0')"
+	PATH="$stubs:$(minimal_path)" run SETUP --project "$PROJECT" --dir "$PROJECT/site" --backend playground
+	[ "$status" -ne 0 ]
+	[[ "$output" == *"can't live inside"* ]]
+}
+
+@test "a project's own .env is not mistaken for an existing sandbox" {
+	printf 'APP_NAME=Laravel\n' >"$PROJECT/.env"
+	stubs="$(stub_cmd npx 'exit 0')"
+	PATH="$stubs:$(minimal_path)" run SETUP --project "$PROJECT" --dir "$PROJECT" --backend playground
+	[ "$status" -ne 0 ]
+	[[ "$output" == *"not empty"* ]]
+}
+
+@test "--locale is stored in the site .env" {
+	stubs="$(stub_cmd npx 'exit 0')"
+	PATH="$stubs:$(minimal_path)" run SETUP --project "$PROJECT" --backend playground --port 9131 --locale es_ES
+	[ "$status" -eq 0 ]
+	grep -q '^SANDBOXWP_LOCALE=es_ES$' "$SANDBOXWP_HOME/project/.env"
+}

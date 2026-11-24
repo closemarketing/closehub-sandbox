@@ -25,6 +25,38 @@ sbx_php_ok() {
 	php -r "exit(version_compare(PHP_VERSION, '$SBX_MIN_PHP', '>=') ? 0 : 1);" 2>/dev/null
 }
 
+# Absolute path without requiring the directory to exist (it may be created later).
+sbx_abspath() {
+	local p="$1"
+	# Literal ~ (quoted by the caller): expand it ourselves.
+	# shellcheck disable=SC2088
+	case "$p" in
+	"~") p="$HOME" ;;
+	"~/"*) p="$HOME/${p#\~/}" ;;
+	/*) ;;
+	*) p="$PWD/$p" ;;
+	esac
+	if [ -d "$p" ]; then
+		(cd "$p" && pwd)
+	else
+		printf '%s\n' "${p%/}"
+	fi
+}
+
+# 0 if a directory has nothing that WordPress files could clash with. Agent/editor/VCS files are fine.
+sbx_dir_is_free() {
+	local dir="$1" f
+	[ -d "$dir" ] || return 0
+	for f in "$dir"/* "$dir"/.[!.]* "$dir"/..?*; do
+		[ -e "$f" ] || [ -L "$f" ] || continue
+		case "$(basename "$f")" in
+		.claude | .DS_Store | .git | .gitignore | .gitattributes | AGENTS.md | CLAUDE.md | README.md) ;;
+		*) return 1 ;;
+		esac
+	done
+	return 0
+}
+
 # Lowercase slug safe for directory names and WordPress plugin/theme slugs.
 sbx_slug() {
 	printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed -e 's/[^a-z0-9]/-/g' -e 's/--*/-/g' -e 's/^-//' -e 's/-$//'

@@ -38,6 +38,7 @@ scripts/launch.sh                 Merges the sandboxwp entry into .claude/launch
 scripts/router.php                Router for php -S (pretty permalinks, static files)
 templates/env.example             Variables written to the site .env
 templates/wp-config-env.php       Loads .env into constants from wp-config.php
+templates/site-AGENTS.md          AGENTS.md skeleton for website sandboxes (filled by the command)
 tests/*.bats                      bats tests for scripts
 ```
 
@@ -47,14 +48,36 @@ Layout created on disk:
 
 ```
 ~/SandBox/<name>/                 WordPress install (override base dir with SANDBOXWP_HOME)
-~/SandBox/<name>/.env             Port, URLs, admin login (chmod 600)
-~/SandBox/<name>/.sandboxwp-bin/  Copies of serve.sh, lib.sh, router.php (launch.json points here)
+<site>/.env                      Port, URLs, admin login (chmod 600)
+<site>/.sandboxwp-bin/            Copies of serve.sh, lib.sh, router.php (launch.json points here)
+<site>/AGENTS.md                  Only for websites (type none): what the site is, how to run it
 <project>/.claude/launch.json     "sandboxwp-<name>" configuration
 ```
 
-Sites live outside the project on purpose: the project is symlinked into the site, so a site inside
-the project would create a symlink loop and put WordPress core in the repo. The launch.json points
-at the copied `serve.sh` inside the site, so it keeps working when the plugin is updated.
+### Where the site goes: always the user's choice
+
+The command **asks before creating anything** (unless `--dir` was given or a sandbox already exists):
+
+1. The current directory, offered first only when the project type is `none` and the directory is
+   empty apart from `.claude`, `.git*`, `AGENTS.md`, `CLAUDE.md`, `README.md`, `.DS_Store`
+   (e.g. the user made `~/Studio/my-shop` and ran the command there).
+2. `~/SandBox/<name>` (base dir overridable with `SANDBOXWP_HOME`).
+3. Any path the user types.
+
+`setup.sh --dir` enforces the rules: the directory must be empty (same allowlist), must not hold a
+WordPress install it didn't create (Studio, Local...), and for plugin/theme projects must be outside
+the project, which is symlinked into the site (a site inside it would be a symlink loop). Inside a
+git checkout it adds `.env`, `.sandboxwp-bin/`, `wp-content/database/` to `.gitignore`.
+
+The launch.json points at the copied `serve.sh` inside the site, so it keeps working when the plugin
+is updated.
+
+### Website AGENTS.md
+
+When the type is `none` (a website, not a plugin/theme) and the site has no `AGENTS.md`, the command
+asks what the website is about (business, kind of site, language) together with the location, passes
+`--title`/`--locale` to `setup.sh`, and writes `<site>/AGENTS.md` from `templates/site-AGENTS.md`.
+An existing `AGENTS.md` is never overwritten.
 
 ### Project type (plugin / theme / none)
 

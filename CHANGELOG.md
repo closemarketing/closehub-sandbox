@@ -6,7 +6,11 @@ All notable changes to this project are documented here. Versions follow [semver
 
 ### Added
 
-- `/sandboxwp-ai:wp-local` command and `sandboxwp-ai` skill.
+- `/sandboxwp-ai:wp-local` command and `sandboxwp-ai` skill. The command always asks where to create
+  the site (current empty folder, `~/SandBox/<name>` or any path) and, for websites, what the site is
+  about, its kind and language, then writes the site's `AGENTS.md`.
+- `setup.sh --dir`, `--title`, `--locale`: site directory validation (empty, not an existing
+  WordPress install, not inside the plugin/theme it mounts).
 - `setup.sh`: WordPress + SQLite drop-in site in `~/SandBox/<name>`, `admin` / `password` login
   (overridable via environment), plugin/theme mount and activation. Project type read from the project's `AGENTS.md`,
   with header detection as fallback.

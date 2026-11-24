@@ -5,9 +5,11 @@ description: "Use this skill to create, start, inspect or remove a local WordPre
 
 # sandboxwp-ai
 
-Local WordPress sandboxes for the project in the current directory. Sites live in `~/SandBox/<name>`
-(base dir overridable with `SANDBOXWP_HOME`) and run on `php -S` with the SQLite drop-in, or on
-WordPress Playground.
+Local WordPress sandboxes for the project in the current directory. They run on `php -S` with the
+SQLite drop-in, or on WordPress Playground. **Where the site is created is always the user's choice**:
+the current directory when it is empty and not a plugin/theme, `~/SandBox/<name>` by default
+(`SANDBOXWP_HOME` changes the base), or any path they give. Below, `<site>` is that directory
+(it is in the `runtimeArgs` of the `sandboxwp-*` entry in `.claude/launch.json`).
 
 ## Create or reuse a sandbox
 
@@ -15,7 +17,11 @@ Follow the `/sandboxwp-ai:wp-local` command (`${CLAUDE_PLUGIN_ROOT}/commands/wp-
 
 - **Project type comes from the project's `AGENTS.md`/`CLAUDE.md`** (plugin, theme, or none). Pass it
   as `--type`. Only without that file fall back to the script's header detection.
-- Run `scripts/setup.sh`, then `scripts/launch.sh`, then `preview_start` with the printed name.
+- **Ask where to create the site before running anything** (see step 2 of the command). Never pick
+  a directory on your own, and never put the site inside the plugin/theme it mounts.
+- Run `scripts/setup.sh --dir <chosen>`, then `scripts/launch.sh`, then `preview_start` with the printed name.
+- For a website (type `none`) without `AGENTS.md`: ask what it is about, the kind of site and the
+  language in the same question round, and write `<site>/AGENTS.md` from `templates/site-AGENTS.md`.
 - Login is always `admin` / `password` (overridable with `SANDBOXWP_ADMIN_USER` / `SANDBOXWP_ADMIN_PASSWORD`).
 
 ## Day-to-day operations
@@ -24,10 +30,10 @@ Follow the `/sandboxwp-ai:wp-local` command (`${CLAUDE_PLUGIN_ROOT}/commands/wp-
 |---|---|
 | Start a stopped sandbox | `preview_start` with `sandboxwp-<name>` (launch.json already exists) |
 | Stop it | `preview_stop` |
-| WP-CLI on the sandbox | `wp --path="$HOME/SandBox/<name>" <command>` (php backend only) |
-| PHP errors | `~/SandBox/<name>/wp-content/debug.log` (`WP_DEBUG_LOG` on, display off) |
+| WP-CLI on the sandbox | `wp --path="<site>" <command>` (php backend only) |
+| PHP errors | `<site>/wp-content/debug.log` (`WP_DEBUG_LOG` on, display off) |
 | Port in use | Change `SANDBOXWP_PORT`, `WP_HOME`, `WP_SITEURL` in the site `.env`, re-run `launch.sh` |
-| Remove a sandbox | Confirm with the user first (deletes the database), then `preview_stop`, delete `~/SandBox/<name>` and remove its entry from `.claude/launch.json` |
+| Remove a sandbox | Confirm with the user first (deletes the database), then `preview_stop`, delete `<site>` (if the site is the project directory itself, delete only the WordPress files, never `.claude`, `.git` or docs) and remove its entry from `.claude/launch.json` |
 
 ## Limits to tell the user about when relevant
 

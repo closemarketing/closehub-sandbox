@@ -68,6 +68,29 @@ teardown() { common_teardown; }
 	[ "$SBX_B" = "x=y" ]
 }
 
+@test "sbx_abspath resolves relative, ~ and missing paths" {
+	cd "$TEST_TMP"
+	[ "$(sbx_abspath project)" = "$TEST_TMP/project" ]
+	[ "$(sbx_abspath '~/x')" = "$HOME/x" ]
+	[ "$(sbx_abspath "$TEST_TMP/not/yet/")" = "$TEST_TMP/not/yet" ]
+}
+
+@test "sbx_dir_is_free accepts empty and agent/VCS-only directories" {
+	sbx_dir_is_free "$TEST_TMP/missing"
+	sbx_dir_is_free "$PROJECT"
+	mkdir -p "$PROJECT/.claude" "$PROJECT/.git"
+	touch "$PROJECT/AGENTS.md" "$PROJECT/README.md" "$PROJECT/.DS_Store" "$PROJECT/.gitignore"
+	sbx_dir_is_free "$PROJECT"
+}
+
+@test "sbx_dir_is_free rejects directories with other files" {
+	touch "$PROJECT/index.html"
+	! sbx_dir_is_free "$PROJECT"
+	rm "$PROJECT/index.html"
+	touch "$PROJECT/.env"
+	! sbx_dir_is_free "$PROJECT"
+}
+
 @test "sbx_free_port returns a numeric port at or above the start" {
 	port="$(sbx_free_port 18080)"
 	[[ "$port" =~ ^[0-9]+$ ]]

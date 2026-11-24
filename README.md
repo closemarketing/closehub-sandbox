@@ -33,21 +33,30 @@ Options:
 
 | Flag | Default | |
 |---|---|---|
-| `[name]` | repo folder name | Site name (folder under `~/SandBox/`) |
+| `[name]` | folder name | Site name |
+| `--dir PATH` | asked every time | Where WordPress is installed |
 | `--type plugin\|theme\|none` | from `AGENTS.md`, else auto | What to mount and activate |
 | `--backend php\|playground` | `php` if PHP + WP-CLI exist | Server backend |
 | `--port N` | first free from 8080 | Local port |
 | `--wp-version VER` | `latest` | WordPress version |
+| `--title "…"` | `<name> (sandbox)` | Site title |
+| `--locale es_ES` | `en_US` | WordPress language |
 
 ### What it does
 
 1. Reads your project's `AGENTS.md` (or `CLAUDE.md`) to know whether the repo is a plugin, a theme or
    neither. Without it, it detects `Plugin Name:` / `Theme Name:` headers.
-2. Creates the site in `~/SandBox/<name>` (change the base with `SANDBOXWP_HOME`): WordPress core,
+2. **Asks where to create the site**: the current folder when it is empty and you are building a
+   website (e.g. you made `~/Studio/my-shop` and ran the command there), `~/SandBox/<name>`
+   (change the base with `SANDBOXWP_HOME`) or any path. A plugin/theme repo is never used as the
+   site folder, because it is mounted into the site.
+   For a website it also asks what the site is about, the kind of site and the language, and
+   writes an `AGENTS.md` for it.
+3. Installs WordPress core,
    the official [SQLite Database Integration](https://wordpress.org/plugins/sqlite-database-integration/)
    drop-in, pretty permalinks, `WP_ENVIRONMENT_TYPE=local`, debug log on.
-3. Symlinks your repo into `wp-content/plugins` or `wp-content/themes` and activates it.
-4. Adds a `sandboxwp-<name>` entry to `.claude/launch.json` (other entries are kept) and starts it
+4. Symlinks your repo into `wp-content/plugins` or `wp-content/themes` and activates it.
+5. Adds a `sandboxwp-<name>` entry to `.claude/launch.json` (other entries are kept) and starts it
    with `preview_start`.
 
 Log in to `/wp-admin/` with **`admin` / `password`**. Override with the `SANDBOXWP_ADMIN_USER` and
