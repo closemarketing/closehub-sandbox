@@ -124,3 +124,35 @@ REPOS() { bash "$SBX_REPO/scripts/repos.sh" "$@"; }
 	[ "$status" -eq 0 ]
 	[ ! -d "$SITE" ]
 }
+
+@test "remove.sh stops on commits made from a detached HEAD" {
+	p="$(make_remote my-plugin plugin.php '<?php')"
+	REPOS --site "$SITE" --plugin "$p" >/dev/null 2>&1
+	repo="$SITE/wp-content/plugins/my-plugin"
+	git -C "$repo" checkout -q --detach
+	echo change >>"$repo/plugin.php"
+	git -C "$repo" commit -qam detached
+	run bash "$SBX_REPO/scripts/remove.sh" --site "$SITE" --project "$PROJECT" --yes
+	[ "$status" -ne 0 ]
+	[ -d "$repo" ]
+}
+
+@test "remove.sh stops on stashed work" {
+	p="$(make_remote my-plugin plugin.php '<?php')"
+	REPOS --site "$SITE" --plugin "$p" >/dev/null 2>&1
+	repo="$SITE/wp-content/plugins/my-plugin"
+	echo change >>"$repo/plugin.php"
+	git -C "$repo" stash -q
+	run bash "$SBX_REPO/scripts/remove.sh" --site "$SITE" --project "$PROJECT" --yes
+	[ "$status" -ne 0 ]
+	[ -d "$repo" ]
+}
+
+@test "refuses a Playground sandbox, where cloned repos would not load" {
+	printf 'CLOSEHUB_SANDBOX_NAME=site\nCLOSEHUB_SANDBOX_BACKEND=playground\n' >"$SITE/.env"
+	p="$(make_remote my-plugin plugin.php '<?php')"
+	run REPOS --site "$SITE" --plugin "$p"
+	[ "$status" -ne 0 ]
+	[[ "$output" == *"php backend"* ]]
+	[ ! -e "$SITE/wp-content/plugins/my-plugin" ]
+}

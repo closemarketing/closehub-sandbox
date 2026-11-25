@@ -168,7 +168,8 @@ plugin is active → a pretty permalink resolves. Repeat with `--backend playgro
 
 This repo **is** the marketplace (`.claude-plugin/marketplace.json`, `source: "./"`) and it is
 public: whatever is on `main` is what users get. Claude Code only offers an update when the
-`version` changes, so every user-visible change ships with a version bump. Never release without it.
+`version` changes, so every release bumps it. Feature and fix PRs don't touch the version: they add
+their line under `## [Unreleased]`, and the release PR bumps the version for all of them.
 
 ### While developing
 

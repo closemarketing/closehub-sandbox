@@ -46,13 +46,15 @@ case "$SITE" in
 esac
 [ "$YES" = 1 ] || sbx_die "refusing without --yes: deleting $SITE is permanent (database included)"
 
-# Repositories cloned into the site (not symlinks) may hold work that exists nowhere else.
+# Repositories cloned into the site (not symlinks) may hold work that exists nowhere else:
+# uncommitted changes, commits not on any remote (branches or a detached HEAD), or stashes.
 if [ "$DISCARD" = 0 ] && sbx_has git; then
 	unsaved=""
 	for repo in "$SITE"/wp-content/plugins/* "$SITE"/wp-content/themes/*; do
 		[ -d "$repo/.git" ] && [ ! -L "$repo" ] || continue
 		if [ -n "$(git -C "$repo" status --porcelain 2>/dev/null)" ] ||
-			[ -n "$(git -C "$repo" log --branches --not --remotes --oneline 2>/dev/null)" ]; then
+			[ -n "$(git -C "$repo" log HEAD --branches --not --remotes --oneline 2>/dev/null)" ] ||
+			[ -n "$(git -C "$repo" stash list 2>/dev/null)" ]; then
 			unsaved="$unsaved ${repo#"$SITE"/}"
 		fi
 	done

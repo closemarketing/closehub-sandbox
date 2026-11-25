@@ -62,9 +62,14 @@ add three more questions to the same call:
 - **Kind of site:** online shop (WooCommerce) · corporate / services · blog / content · landing page.
 - **Language:** Spanish (`es_ES`) · English (`en_US`) · Catalan (`ca`) · other.
 
-**Repositories to download.** Always add this question to the same call (except when reusing a
-sandbox). It decides which plugin and theme repositories are cloned into the site, and where each
-one goes. The project repo itself is never in this list: a plugin/theme project is mounted as usual.
+**Repositories to download.** Always ask it (except when reusing a sandbox or with
+`--backend playground`, which can't load cloned repos). It decides which plugin and theme
+repositories are cloned into the site, and where each one goes. The project repo itself is never in
+this list: a plugin/theme project is mounted as usual.
+
+AskUserQuestion takes at most four questions per call. Add it to the same call when there is room;
+for a new website (location + three website questions) ask it in a second call right after the
+first.
 
 - Build the candidates first, quietly, with `gh` (skip the lookup if `gh` is missing or not logged in):
   - **Clone (`--from`):** every active plugin/theme of the manifest with `on_wporg: false` that is

@@ -41,6 +41,9 @@ SITE="$(cd "$SITE" && pwd)"
 	sbx_die "$SITE is not a closehub-sandbox site (no CLOSEHUB_SANDBOX_NAME in .env)"
 [ "${#REPOS[@]}" -gt 0 ] || sbx_die "nothing to clone: pass --plugin or --theme"
 sbx_has git || sbx_die "git is required"
+# Playground runs a fresh WordPress that only mounts the project: cloned repos would be invisible.
+[ "$(sbx_env_get "$SITE/.env" CLOSEHUB_SANDBOX_BACKEND 2>/dev/null || echo php)" = php ] ||
+	sbx_die "cloning repositories needs the php backend (this sandbox uses Playground)"
 
 # Same normalisation as GitHub: case and a trailing .git don't matter.
 same_remote() {
