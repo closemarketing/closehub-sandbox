@@ -22,6 +22,8 @@ Follow the `/closehub-sandbox:wp-local` command (`${CLAUDE_PLUGIN_ROOT}/commands
 - Run `scripts/setup.sh --dir <chosen>`, then `scripts/launch.sh`, then `preview_start` with the printed name.
 - For a website (type `none`) without `AGENTS.md`: ask what it is about, the kind of site and the
   language in the same question round, and write `<site>/AGENTS.md` from `templates/site-AGENTS.md`.
+- In the same question round, ask which plugin/theme repositories to download and where each goes
+  (`wp-content/plugins|themes/<slug>`); clone them with `scripts/repos.sh`, as real checkouts.
 - Login is always `admin` / `password` (overridable with `CLOSEHUB_SANDBOX_ADMIN_USER` / `CLOSEHUB_SANDBOX_ADMIN_PASSWORD`).
 
 ## Day-to-day operations

@@ -62,6 +62,34 @@ add three more questions to the same call:
 - **Kind of site:** online shop (WooCommerce) · corporate / services · blog / content · landing page.
 - **Language:** Spanish (`es_ES`) · English (`en_US`) · Catalan (`ca`) · other.
 
+**Repositories to download.** Always ask it (except when reusing a sandbox or with
+`--backend playground`, which can't load cloned repos). It decides which plugin and theme
+repositories are cloned into the site, and where each one goes. The project repo itself is never in
+this list: a plugin/theme project is mounted as usual.
+
+AskUserQuestion takes at most four questions per call. Add it to the same call when there is room;
+for a new website (location + three website questions) ask it in a second call right after the
+first.
+
+- Build the candidates first, quietly, with `gh` (skip the lookup if `gh` is missing or not logged in):
+  - **Clone (`--from`):** every active plugin/theme of the manifest with `on_wporg: false` that is
+    not a production-only plugin. For each slug, look for a repository with that name among the
+    user's GitHub accounts: owners from `gh api user --jq .login` and `gh api user/orgs --jq '.[].login'`,
+    then `gh repo view <owner>/<slug> --json nameWithOwner`. The type comes from the manifest.
+  - **Website (type `none`):** repositories matching the site name, e.g.
+    `gh search repos <name> --owner <owner> --json fullName --limit 10` for each owner
+    (`mitiendademunecas` → `close-mitiendademunecas-theme`). A repository is a theme when it has
+    `style.css` with `Theme Name:` (`gh api repos/<owner>/<repo>/contents/style.css`), otherwise a plugin.
+  - **Plugin/theme project:** no lookup; the question only offers "None" or typing repositories.
+- Ask with the candidates in the question text, one per line as `owner/repo → wp-content/themes/<slug>`
+  (or `plugins/<slug>`). The folder must be the slug WordPress expects (the manifest slug in a clone),
+  even when the repository has another name.
+- Options: "All of them" (recommended when there are candidates) · "Only the theme" (when one is a
+  theme) · "None". "Other" lets the user list repositories by hand (`owner/repo`, optionally
+  `@branch`, and whether each is a plugin or a theme).
+- Say in the question that the repositories are cloned into the site, not linked: work done there
+  has to be committed and pushed from that folder.
+
 Write the questions in the user's language.
 
 ## 3. Create the site
@@ -80,6 +108,24 @@ For a website, derive `--title` from the answer (e.g. "Mi tienda de muñecas") a
 - Re-running on an existing sandbox reuses it; that is expected.
 - If it refuses the directory (not empty, existing WordPress install, inside the plugin/theme),
   tell the user why and ask again; never retry with another directory on your own.
+
+### Clone the chosen repositories
+
+If the user picked any repository, right after `setup.sh` (and, for a clone, before `import.sh`, so
+they don't end up as pending):
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/repos.sh" --site "<CLOSEHUB_SANDBOX_SITE>" \
+  [--theme owner/repo[@branch][=slug]]... [--plugin owner/repo[@branch][=slug]]... [--activate]
+```
+
+- Add `=slug` when the repository name differs from the folder WordPress expects.
+- Pass `--activate` for a new empty site only; a clone keeps the plugins and theme active in the
+  imported database.
+- It prints `CLOSEHUB_SANDBOX_REPOS` (what was cloned) and `CLOSEHUB_SANDBOX_REPOS_TODO`
+  (`slug:composer-install` or `slug:npm-build` still to run). Offer to run those steps.
+- If it fails on access (private repository) or on an existing folder, tell the user why and go on
+  with the rest; never delete the existing folder yourself.
 
 ## 4. Write .claude/launch.json
 
@@ -138,7 +184,7 @@ same AskUserQuestion round:
 
 Default site name: the source domain as a slug (e.g. `somos174-es`).
 
-**After step 3** (`setup.sh` with `--backend php`):
+**After step 3** (`setup.sh` with `--backend php`, then `repos.sh` for the chosen repositories):
 
 1. Call `closehub-export/create-db-export` with `anonymize` as answered. **The ticket is a secret:**
    never show it, never write it to a file, never put it on a command line. Pass it only as the
@@ -175,6 +221,9 @@ Tell the user, briefly:
 - URL and that wp-admin is at `<CLOSEHUB_SANDBOX_URL>/wp-admin/`.
 - Site folder (`CLOSEHUB_SANDBOX_SITE`) and backend.
 - Which plugin/theme was mounted and activated, or that the site is empty.
+- Repositories cloned into the site (`CLOSEHUB_SANDBOX_REPOS`) with their folders, any build step
+  left (`CLOSEHUB_SANDBOX_REPOS_TODO`), and that changes there are committed and pushed from those
+  folders.
 - **Login:** `admin` / `password` (or the `CLOSEHUB_SANDBOX_ADMIN_USER` / `CLOSEHUB_SANDBOX_ADMIN_PASSWORD`
   values the script printed, if the user overrode them).
 - Any activation warning from the script (e.g. missing `composer install` or build step).

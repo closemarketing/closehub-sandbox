@@ -7,6 +7,8 @@
 # --keep-project-files  Delete only WordPress and sandbox files, keeping .claude, .git*, AGENTS.md,
 #                       CLAUDE.md and README.md (for a site created inside the project folder).
 # --yes                 Required: the deletion can't be undone (database included).
+# --discard-repo-changes  Delete even if a repository cloned into the site (repos.sh) has
+#                       uncommitted changes or commits not pushed. Without it, removal stops.
 #
 # A mounted plugin/theme is a symlink: removing it never touches the repo it points to.
 set -euo pipefail
@@ -19,13 +21,15 @@ SITE=""
 PROJECT="$PWD"
 KEEP=0
 YES=0
+DISCARD=0
 while [ $# -gt 0 ]; do
 	case "$1" in
 	--site) SITE="${2:?}"; shift 2 ;;
 	--project) PROJECT="${2:?}"; shift 2 ;;
 	--keep-project-files) KEEP=1; shift ;;
 	--yes) YES=1; shift ;;
-	-h | --help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+	--discard-repo-changes) DISCARD=1; shift ;;
+	-h | --help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
 	*) sbx_die "unknown argument: $1" ;;
 	esac
 done
@@ -41,6 +45,21 @@ case "$SITE" in
 / | "$HOME" | "$(sbx_home)") sbx_die "refusing to delete $SITE" ;;
 esac
 [ "$YES" = 1 ] || sbx_die "refusing without --yes: deleting $SITE is permanent (database included)"
+
+# Repositories cloned into the site (not symlinks) may hold work that exists nowhere else:
+# uncommitted changes, commits not on any remote (branches or a detached HEAD), or stashes.
+if [ "$DISCARD" = 0 ] && sbx_has git; then
+	unsaved=""
+	for repo in "$SITE"/wp-content/plugins/* "$SITE"/wp-content/themes/*; do
+		[ -d "$repo/.git" ] && [ ! -L "$repo" ] || continue
+		if [ -n "$(git -C "$repo" status --porcelain 2>/dev/null)" ] ||
+			[ -n "$(git -C "$repo" log HEAD --branches --not --remotes --oneline 2>/dev/null)" ] ||
+			[ -n "$(git -C "$repo" stash list 2>/dev/null)" ]; then
+			unsaved="$unsaved ${repo#"$SITE"/}"
+		fi
+	done
+	[ -z "$unsaved" ] || sbx_die "repositories with uncommitted or unpushed work:$unsaved. Commit and push them, or pass --discard-repo-changes"
+fi
 
 PORT="$(sbx_env_get "$SITE/.env" CLOSEHUB_SANDBOX_PORT || true)"
 

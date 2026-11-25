@@ -18,6 +18,11 @@ Generic and public: it must work for any WordPress developer, not only CLOSE.
   downloads the chunks with the export ticket, runs them through the SQLite driver, switches to the
   production table prefix, replaces production URLs, installs the same plugins/theme from
   WordPress.org, and applies the safety layer.
+- **Repositories:** the command asks which plugin/theme repositories to download (candidates: the
+  non-WordPress.org plugins/theme of a clone, or repos named like the website) and `repos.sh`
+  clones them into `wp-content/plugins|themes/<slug>` as real checkouts, never symlinks. It never
+  deletes an existing folder; `remove.sh` refuses to delete a site whose cloned repos hold
+  uncommitted or unpushed work unless `--discard-repo-changes`.
 - **Production-only plugins** (cache, security/anti-spam, SMTP, CDN, backups, management agents)
   listed in `templates/production-plugins.txt` are not installed and are removed from
   `active_plugins` on clones. Per import: `--keep-plugins` / `--remove-plugins`; preview with
@@ -50,6 +55,7 @@ scripts/setup.sh                  Creates the site (core, SQLite drop-in, config
 scripts/serve.sh                  Starts the server; this is what launch.json runs
 scripts/launch.sh                 .claude/launch.json entries: add (--site), --list (ok|missing), --remove NAME
 scripts/remove.sh                 Deletes a sandbox (--yes required; refuses non-sandbox dirs; stops its server)
+scripts/repos.sh                  Clones plugin/theme repos into the site (--plugin/--theme owner/repo[@branch][=slug])
 scripts/import.sh                 --from: download export job, import, URLs, plugins/theme, safety, login
 scripts/import-sql.php            Runs a MySQL dump through $wpdb (SQLite driver) via wp eval-file
 templates/closehub-sandbox-safety.php  mu-plugin for clones: blocks email and outgoing HTTP (allowlist)
@@ -162,7 +168,8 @@ plugin is active → a pretty permalink resolves. Repeat with `--backend playgro
 
 This repo **is** the marketplace (`.claude-plugin/marketplace.json`, `source: "./"`) and it is
 public: whatever is on `main` is what users get. Claude Code only offers an update when the
-`version` changes, so every user-visible change ships with a version bump. Never release without it.
+`version` changes, so every release bumps it. Feature and fix PRs don't touch the version: they add
+their line under `## [Unreleased]`, and the release PR bumps the version for all of them.
 
 ### While developing
 
