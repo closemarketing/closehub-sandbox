@@ -2,13 +2,11 @@
 
 All notable changes to this project are documented here. Versions follow [semver](https://semver.org).
 
-## [0.1.0] - Unreleased
+## [Unreleased]
 
-### Fixed
+## [0.1.0] - 2026-11-25
 
-- Clones into a sandbox created by an older version kept WP-Cron on: `import.sh` now refreshes the
-  `.env` loader (`closehub-sandbox-env.php`) so `DISABLE_WP_CRON` applies.
-- The generic `smtp` plugin (folder `smtp`) is dropped from clones like other SMTP plugins.
+First release.
 
 ### Added
 

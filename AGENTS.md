@@ -160,15 +160,47 @@ plugin is active → a pretty permalink resolves. Repeat with `--backend playgro
 
 ## Release
 
-1. Bump `version` in `.claude-plugin/plugin.json` and the plugin entry in `.claude-plugin/marketplace.json` (semver).
-2. Add the entry to `CHANGELOG.md`.
-3. Merge the release PR, then tag and publish:
+This repo **is** the marketplace (`.claude-plugin/marketplace.json`, `source: "./"`) and it is
+public: whatever is on `main` is what users get. Claude Code only offers an update when the
+`version` changes, so every user-visible change ships with a version bump. Never release without it.
+
+### While developing
+
+- Every PR with a user-visible change adds a line under `## [Unreleased]` in `CHANGELOG.md`
+  (`Added` / `Changed` / `Fixed` / `Removed`). Internal-only changes (tests, CI) don't need one.
+- Public repo: no client names, domains, customer data or secrets in code, fixtures, commits or PR
+  descriptions. Use `example.com` / `example.test` in fixtures.
+
+### Cutting a release
+
+1. Branch `release/X.Y.Z` off an up-to-date `main`. Semver: `Z` for fixes, `Y` for new features or
+   flags, `X` for breaking changes (removed flags, changed `.env` keys, changed site layout).
+2. Bump `version` to `X.Y.Z` in **both** files (they must match):
+   - `.claude-plugin/plugin.json`
+   - the `closehub-sandbox` entry in `.claude-plugin/marketplace.json`
+3. In `CHANGELOG.md`, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD` and add a new empty
+   `## [Unreleased]` above it.
+4. If the release changes what users run (requirements, flags, commands, safety layer), update
+   `README.md` and the skill/commands to match.
+5. Check: `claude plugin validate .`, `shellcheck -x scripts/*.sh`, `bats tests/`.
+6. PR in Spanish (`Release X.Y.Z`), CI green, merge.
+7. Tag the merge commit on `main` and publish the GitHub release with the changelog section as notes:
    ```bash
-   git tag vX.Y.Z && git push origin vX.Y.Z
-   gh release create vX.Y.Z --notes-from-tag
+   git checkout main && git pull --ff-only
+   git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z
+   gh release create vX.Y.Z --title "vX.Y.Z" --notes-file <changelog section>
    ```
-Users install or update with `/plugin marketplace add closemarketing/closehub-sandbox` and
-`/plugin install closehub-sandbox@closehub-sandbox`.
+8. Tell the team to update (below).
+
+### How users install and update
+
+```
+/plugin marketplace add closemarketing/closehub-sandbox
+/plugin install closehub-sandbox@closehub-sandbox
+```
+
+Update: `/plugin marketplace update closehub-sandbox`, then update the plugin from the `/plugin`
+menu (or enable auto-update for this marketplace there).
 
 ## Known limits
 
