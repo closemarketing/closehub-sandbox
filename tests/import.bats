@@ -60,10 +60,25 @@ ARGS() { echo --site "$SITE" --manifest "$MANIFEST" --job 0123456789abcdef --tab
 
 @test "--print-removed lists the active production-only plugins of the manifest" {
 	command -v php >/dev/null || skip "php not installed"
-	echo '{"plugins":[{"slug":"woocommerce"},{"slug":"wp-rocket"},{"slug":"honeypot"},{"slug":"wp-mail-smtp"},{"slug":"wordfence"},{"slug":"modular-connector"},{"slug":"closehub-connector"}]}' >"$MANIFEST"
+	echo '{"plugins":[{"slug":"woocommerce"},{"slug":"wp-rocket"},{"slug":"honeypot"},{"slug":"wp-mail-smtp"},{"slug":"smtp"},{"slug":"wordfence"},{"slug":"modular-connector"},{"slug":"closehub-connector"}]}' >"$MANIFEST"
 	run IMPORT --manifest "$MANIFEST" --print-removed
 	[ "$status" -eq 0 ]
-	[ "$output" = "$(printf 'wp-rocket\nhoneypot\nwp-mail-smtp\nwordfence\nmodular-connector')" ]
+	[ "$output" = "$(printf 'wp-rocket\nhoneypot\nwp-mail-smtp\nsmtp\nwordfence\nmodular-connector')" ]
+}
+
+@test "import refreshes the .env loader so older sandboxes honour DISABLE_WP_CRON" {
+	grep -qF 'cp "$SBX_ROOT/templates/wp-config-env.php" "$SITE/closehub-sandbox-env.php"' "$SBX_REPO/scripts/import.sh"
+}
+
+@test "the .env loader defines DISABLE_WP_CRON only when it is true" {
+	command -v php >/dev/null || skip "php not installed"
+	cp "$SBX_REPO/templates/wp-config-env.php" "$SITE/closehub-sandbox-env.php"
+	printf 'DISABLE_WP_CRON=true\n' >"$SITE/.env"
+	run php -r 'require $argv[1]; echo var_export(defined("DISABLE_WP_CRON") && DISABLE_WP_CRON, true);' "$SITE/closehub-sandbox-env.php"
+	[ "$output" = "true" ]
+	printf 'WP_DEBUG=true\n' >"$SITE/.env"
+	run php -r 'require $argv[1]; echo var_export(defined("DISABLE_WP_CRON"), true);' "$SITE/closehub-sandbox-env.php"
+	[ "$output" = "false" ]
 }
 
 @test "--keep-plugins and --remove-plugins override the default list" {
