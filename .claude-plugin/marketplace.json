@@ -10,7 +10,7 @@
     {
       "name": "closehub-sandbox",
       "description": "Spin up a local WordPress sandbox (PHP + SQLite) for the plugin or theme you are developing and preview it without leaving Claude.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "source": "./",
       "category": "development"
     }

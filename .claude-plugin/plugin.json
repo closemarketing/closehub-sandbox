@@ -1,6 +1,6 @@
 {
   "name": "closehub-sandbox",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Spin up a local WordPress sandbox (PHP built-in server + SQLite) and open it in Claude's built-in browser, without leaving Claude.",
   "author": {
     "name": "Close Marketing",
