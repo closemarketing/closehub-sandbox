@@ -4,6 +4,12 @@ All notable changes to this project are documented here. Versions follow [semver
 
 ## [0.1.0] - Unreleased
 
+### Fixed
+
+- Clones into a sandbox created by an older version kept WP-Cron on: `import.sh` now refreshes the
+  `.env` loader (`closehub-sandbox-env.php`) so `DISABLE_WP_CRON` applies.
+- The generic `smtp` plugin (folder `smtp`) is dropped from clones like other SMTP plugins.
+
 ### Added
 
 - `/closehub-sandbox:wp-local` command and `closehub-sandbox` skill. The command always asks where to create

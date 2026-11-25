@@ -58,6 +58,8 @@ smtp-mailer
 mailgun
 sendgrid-email-delivery-simplified
 wp-ses
+# Generic "SMTP" plugin, matched by folder (not on WordPress.org under this slug).
+smtp
 
 # Backups.
 updraftplus

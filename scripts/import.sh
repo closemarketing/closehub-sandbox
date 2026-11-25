@@ -190,6 +190,8 @@ replace_url "$SOURCE_URL"
 # 5. Safety: no email, no outgoing HTTP except WordPress.org, no WP-Cron.
 mkdir -p "$SITE/wp-content/mu-plugins"
 cp "$SBX_ROOT/templates/closehub-sandbox-safety.php" "$SITE/wp-content/mu-plugins/"
+# Refresh the .env loader too: sandboxes created by older versions don't read DISABLE_WP_CRON.
+cp "$SBX_ROOT/templates/wp-config-env.php" "$SITE/closehub-sandbox-env.php"
 sbx_env_set "$ENV_FILE" DISABLE_WP_CRON true
 
 # 6. Same plugins and theme from WordPress.org; a mounted repo (symlink) always wins.
