@@ -4,6 +4,8 @@ All notable changes to this project are documented here. Versions follow [semver
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-25
+
 ### Added
 
 - The first question round asks which plugin and theme repositories to download and where each goes;
