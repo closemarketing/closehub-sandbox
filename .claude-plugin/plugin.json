@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "description": "Spin up a local WordPress sandbox (PHP built-in server + SQLite) and open it in Claude's built-in browser, without leaving Claude.",
   "author": {
-    "name": "Close",
-    "url": "https://github.com/closemarketing"
+    "name": "Close Marketing",
+    "url": "https://close.marketing"
   },
   "homepage": "https://github.com/closemarketing/closehub-sandbox",
   "repository": "https://github.com/closemarketing/closehub-sandbox",

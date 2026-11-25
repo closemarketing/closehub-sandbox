@@ -121,6 +121,11 @@ bats tests/
 claude --plugin-dir .
 ```
 
+## Authors
+
+Made by [Close Marketing](https://close.marketing) — WordPress plugins at
+[close.technology](https://close.technology).
+
 ## License
 
 GPL-2.0-or-later.
