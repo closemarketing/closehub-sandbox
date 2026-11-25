@@ -23,6 +23,11 @@ foreach ( $closehub_sandbox_constants as $closehub_sandbox_constant ) {
 	}
 }
 
+// Cloned sites: no WP-Cron, so imported scheduled jobs (syncs, emails, webhooks) don't run.
+if ( ! defined( 'DISABLE_WP_CRON' ) && 'true' === ( $_ENV['DISABLE_WP_CRON'] ?? '' ) ) {
+	define( 'DISABLE_WP_CRON', true );
+}
+
 // Debug on, but logged to wp-content/debug.log instead of breaking JSON/REST responses.
 if ( ! defined( 'WP_DEBUG' ) ) {
 	define( 'WP_DEBUG', 'true' === ( $_ENV['WP_DEBUG'] ?? 'false' ) );

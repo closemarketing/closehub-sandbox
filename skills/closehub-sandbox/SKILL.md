@@ -40,9 +40,16 @@ Follow the `/closehub-sandbox:wp-local` command (`${CLAUDE_PLUGIN_ROOT}/commands
 
 - SQLite: plugins with raw MySQL-specific SQL can fail; not for performance testing.
 - Playground backend: fast to start, but its WordPress state is not persisted between runs.
-- Importing a live site (`--from`) is not in v1.
+- Clones (`--from`): plugins/themes not on WordPress.org are missing until added by hand; outgoing
+  email and HTTP (except WordPress.org) are blocked and WP-Cron is off on purpose.
+- Clones drop production-only plugins (cache, security, SMTP, CDN, backups, management agents);
+  the user can keep any of them (`--keep-plugins`).
 
 ## Safety
+
+- Cloning a live site: the export ticket is a secret (env var of the import command only, never shown
+  or written to a file). Never remove the `closehub-sandbox-safety` mu-plugin or turn WP-Cron back on
+  in a clone unless the user asks, and never point it at real third-party accounts.
 
 - Sandboxes are local-only (`WP_ENVIRONMENT_TYPE=local`). Never configure them with production
   API keys or point integrations (ERP, CRM, payments) at real accounts.

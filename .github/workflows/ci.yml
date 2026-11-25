@@ -66,6 +66,18 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8181/hello-world/)" = 200
           curl -s http://localhost:8181/ | grep -q CLOSEHUB-SANDBOX-SMOKE
           wp --path="$site" plugin is-active smoke-plugin
+      - name: MySQL dump through the SQLite driver (import-sql.php)
+        env:
+          CLOSEHUB_SANDBOX_HOME: ${{ runner.temp }}/SandBox
+        run: |
+          site="$CLOSEHUB_SANDBOX_HOME/smoke-plugin"
+          wp --path="$site" --skip-plugins --skip-themes eval-file scripts/import-sql.php tests/Data/import-fixture.sql
+          wp --path="$site" --skip-plugins --skip-themes eval '
+            global $wpdb;
+            $rows = $wpdb->get_col( "SELECT txt FROM wp_sbx_fixture ORDER BY id" );
+            $expected = array( "it'"'"'s \"quoted\" \\ back\nslash 100% ñ €;", null, "a:1:{s:3:\"key\";s:5:\"value\";}" );
+            if ( $rows !== $expected ) { var_export( $rows ); exit( 1 ); }
+            echo "fixture OK\n";'
       - name: Server log on failure
         if: failure()
         run: cat "$RUNNER_TEMP/serve.log" || true

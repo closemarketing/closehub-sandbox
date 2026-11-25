@@ -1,0 +1,77 @@
+# Plugins that only make sense in production. When a site is cloned with --from they are not
+# installed and are removed from active_plugins. Matched by plugin folder (slug).
+# Override per import: import.sh --keep-plugins a,b / --remove-plugins c,d.
+
+# Page cache and optimization: stale pages and minified assets while developing.
+wp-rocket
+w3-total-cache
+wp-super-cache
+litespeed-cache
+wp-fastest-cache
+sg-cachepress
+breeze
+cache-enabler
+comet-cache
+hummingbird-performance
+nitropack
+wp-optimize
+swift-performance-lite
+autoptimize
+jetpack-boost
+perfmatters
+flying-press
+wp-cloudflare-page-cache
+
+# Object cache: needs Redis/Memcached that doesn't exist locally.
+redis-cache
+wp-redis
+docket-cache
+
+# CDN.
+cloudflare
+bunnycdn
+
+# Security, login hardening and anti-spam: lockouts, hidden login URL, forced HTTPS, 2FA.
+wordfence
+better-wp-security
+all-in-one-wp-security-and-firewall
+sucuri-scanner
+wp-cerber
+limit-login-attempts-reloaded
+wps-hide-login
+wp-hide-security-enhancer
+defender-security
+ninjafirewall
+jetpack-protect
+really-simple-ssl
+two-factor
+wp-2fa
+honeypot
+wp-armour-extended
+
+# SMTP and transactional email.
+wp-mail-smtp
+post-smtp
+fluent-smtp
+easy-wp-smtp
+smtp-mailer
+mailgun
+sendgrid-email-delivery-simplified
+wp-ses
+
+# Backups.
+updraftplus
+backwpup
+duplicator
+all-in-one-wp-migration
+
+# Remote management agents (would point a dashboard at the copy).
+mainwp-child
+worker
+iwp-client
+modular-connector
+wp-health
+wp-umbrella
+
+# The exporter itself is a production-only tool.
+closehub-connector-export

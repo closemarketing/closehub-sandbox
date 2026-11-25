@@ -1,12 +1,15 @@
 ---
 description: Create (or reuse) a local WordPress sandbox with SQLite for this project and open it in Claude's browser
-argument-hint: "[name] [--dir PATH] [--type plugin|theme|none] [--backend php|playground] [--port N] [--wp-version VER]"
+argument-hint: "[name] [--from SITE] [--dir PATH] [--type plugin|theme|none] [--backend php|playground] [--port N] [--wp-version VER]"
 ---
 
 Set up a local WordPress sandbox for the current project and open it in the built-in browser.
 Arguments from the user: `$ARGUMENTS` (an optional first word without `--` is the site name).
 
 Scripts live in `${CLAUDE_PLUGIN_ROOT}/scripts/`. Run them from the project root.
+
+With `--from <site>` (a domain or URL), the sandbox is a **copy of that live site's database**:
+follow "Cloning a live site" below alongside the normal steps.
 
 ## 1. Decide the project type
 
@@ -104,6 +107,66 @@ Only for type `none`, and only if `<CLOSEHUB_SANDBOX_SITE>/AGENTS.md` does not e
 - Write it in the site's language.
 - If the kind is "online shop", offer to install WooCommerce (`wp --path=<site> plugin install
   woocommerce --activate`); don't install it without a yes.
+
+## Cloning a live site (`--from`)
+
+Needs the site connected over MCP with **CloseHub Connector** plus the private addon
+**closehub-connector-export**. The import uses the `php` backend.
+
+**Before step 2:**
+
+1. Find the site's MCP server: call `closehub-list-sites` on the connected CloseHub servers and pick
+   the one whose URL matches `--from`. None → tell the user the site isn't connected and stop.
+2. Call `closehub-export/db-manifest` on it (direct tool, or `mcp-adapter-execute-ability`).
+   If the ability doesn't exist, the addon isn't installed: offer to deploy the
+   `closehub-connector-export` zip with the `close-wpdev-deploy` skill. It writes to the live site, so
+   only with the user's yes.
+3. Save the manifest JSON to a temporary file. It has no secrets.
+
+**In step 2** skip the website questions (the copy brings title, language and content). Add to the
+same AskUserQuestion round:
+
+- A one-line summary: source URL, database size (`total_bytes`), number of tables, and the active
+  plugins/themes with `on_wporg: false`. Those can't be installed and will be missing for now.
+- **Personal data:** "Exact copy" (default, as agreed) or "Anonymize customers, commenters and
+  non-admin users".
+- **Production-only plugins** (cache, security/anti-spam, SMTP, CDN, backups, management agents)
+  are removed from the copy. List the active ones that apply, from
+  `bash "${CLAUDE_PLUGIN_ROOT}/scripts/import.sh" --manifest "<manifest file>" --print-removed`,
+  and let the user keep any of them ("Remove them" as the default, "Keep some" → ask which and pass
+  `--keep-plugins a,b`). If the user names extra plugins to drop, pass `--remove-plugins c,d`.
+
+Default site name: the source domain as a slug (e.g. `somos174-es`).
+
+**After step 3** (`setup.sh` with `--backend php`):
+
+1. Call `closehub-export/create-db-export` with `anonymize` as answered. **The ticket is a secret:**
+   never show it, never write it to a file, never put it on a command line. Pass it only as the
+   environment variable of the import command.
+2. Run, in the foreground with a 15-minute timeout:
+
+```bash
+CLOSEHUB_EXPORT_TICKET='<ticket>' bash "${CLAUDE_PLUGIN_ROOT}/scripts/import.sh" \
+  --site "<CLOSEHUB_SANDBOX_SITE>" --manifest "<manifest file>" \
+  --base-url "<base_url>" --job "<job_id>" --tables "<comma-separated table names>" \
+  [--keep-plugins a,b] [--remove-plugins c,d]
+```
+
+3. If it fails on a download (expired ticket, timeout), create a new export job and run it again.
+   Downloaded chunks are kept, so it resumes.
+4. Call `closehub-export/revoke-export` with the `job_id` once the import succeeded.
+5. For a website clone, write `AGENTS.md` (step 6) describing it as a local copy of the source URL,
+   with the import date, instead of asking what the site is about.
+
+**In the report** also say:
+
+- Source and date of the copy, and `CLOSEHUB_SANDBOX_PENDING_PLUGINS` / `_THEMES`. Those are not
+  on WordPress.org: the copy may look or behave differently until they are added by hand.
+- `CLOSEHUB_SANDBOX_REMOVED_PLUGINS`: production-only plugins left out of the copy.
+- **Safety is on:** outgoing email and every outgoing HTTP request except WordPress.org are blocked
+  and logged to `debug.log`, and WP-Cron is off. Integration API keys were copied as they are, which
+  is why outgoing HTTP is blocked (allow a host with `CLOSEHUB_SANDBOX_ALLOW_HOSTS` in the site `.env`).
+- The dump was deleted after the import.
 
 ## 7. Report
 
