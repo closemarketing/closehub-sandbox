@@ -56,7 +56,12 @@ Options:
    the official [SQLite Database Integration](https://wordpress.org/plugins/sqlite-database-integration/)
    drop-in, pretty permalinks, `WP_ENVIRONMENT_TYPE=local`, debug log on.
 4. Symlinks your repo into `wp-content/plugins` or `wp-content/themes` and activates it.
-5. Adds a `closehub-sandbox-<name>` entry to `.claude/launch.json` (other entries are kept) and starts it
+5. Asks which plugin and theme **repositories** to download and clones them straight into
+   `wp-content/plugins/<slug>` or `wp-content/themes/<slug>` (no symlink), running `composer install`
+   when needed. On a clone it suggests the repositories of the plugins/theme that aren't on
+   WordPress.org; on a website, the ones named like the site. Work there is committed and pushed from
+   that folder.
+6. Adds a `closehub-sandbox-<name>` entry to `.claude/launch.json` (other entries are kept) and starts it
    with `preview_start`.
 
 Log in to `/wp-admin/` with **`admin` / `password`**. Override with the `CLOSEHUB_SANDBOX_ADMIN_USER` and
@@ -71,7 +76,8 @@ Log in to `/wp-admin/` with **`admin` / `password`**. Override with the `CLOSEHU
 
 It asks which sandbox and confirms (deletion is permanent, database included), stops its server,
 removes its `.claude/launch.json` entry and deletes the site. A mounted plugin/theme repo is never
-touched: only its symlink inside the site goes. If you delete a site folder by hand, the next
+touched: only its symlink inside the site goes. Repositories cloned into the site are deleted with
+it, so removal stops if any of them has uncommitted or unpushed work. If you delete a site folder by hand, the next
 `/closehub-sandbox:wp-local` notices the stale entry and cleans it up.
 
 ### Useful commands

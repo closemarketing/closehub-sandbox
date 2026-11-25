@@ -4,6 +4,17 @@ All notable changes to this project are documented here. Versions follow [semver
 
 ## [Unreleased]
 
+### Added
+
+- The first question round asks which plugin and theme repositories to download and where each goes;
+  `repos.sh` clones them into `wp-content/plugins|themes/<slug>` (real checkouts, `composer install`
+  when needed, build steps reported). Clones suggest the repos of non-WordPress.org plugins/theme.
+
+### Changed
+
+- `remove.sh` stops when a repository cloned into the site has uncommitted or unpushed work
+  (`--discard-repo-changes` to delete anyway).
+
 ## [0.1.0] - 2026-11-25
 
 First release.

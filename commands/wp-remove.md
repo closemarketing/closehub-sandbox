@@ -52,6 +52,10 @@ Pass `--yes` only after the user confirmed in step 2. The script refuses anythin
 closehub-sandbox site, stops a server still listening on the sandbox port, and removes the
 `launch.json` entry.
 
+If it stops because a repository cloned into the site has uncommitted or unpushed work, show the
+user which ones. Offer to commit and push them, or to keep the sandbox. Pass
+`--discard-repo-changes` only if the user explicitly says to throw that work away.
+
 ## 4. Report
 
 One or two lines: what was deleted (path) and what was kept, if anything.
