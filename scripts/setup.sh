@@ -169,19 +169,7 @@ sbx_info "downloading WordPress ($WP_VERSION)"
 wp core download --path="$SITE" --version="$WP_VERSION" --quiet >&2
 
 sbx_info "installing the SQLite drop-in"
-SQLITE_DIR="$SITE/wp-content/plugins/sqlite-database-integration"
-ZIP="$(mktemp)"
-curl -fsSL -o "$ZIP" https://downloads.wordpress.org/plugin/sqlite-database-integration.latest-stable.zip ||
-	sbx_die "could not download sqlite-database-integration"
-unzip -q -o "$ZIP" -d "$SITE/wp-content/plugins"
-rm -f "$ZIP"
-[ -f "$SQLITE_DIR/db.copy" ] || sbx_die "unexpected sqlite-database-integration layout (db.copy missing)"
-# Relative path via __DIR__ keeps the site movable.
-# shellcheck disable=SC2016 # PHP code, not shell
-php -r 'file_put_contents($argv[2], strtr(file_get_contents($argv[1]), [$argv[3] => $argv[4], $argv[5] => $argv[6]]));' \
-	"$SQLITE_DIR/db.copy" "$SITE/wp-content/db.php" \
-	"'{SQLITE_IMPLEMENTATION_FOLDER_PATH}'" "__DIR__ . '/plugins/sqlite-database-integration'" \
-	"{SQLITE_PLUGIN}" "sqlite-database-integration/load.php"
+sbx_install_sqlite "$SITE"
 
 cp "$SBX_ROOT/templates/wp-config-env.php" "$SITE/closehub-sandbox-env.php"
 wpcli config create --dbname=wordpress --dbuser=sqlite --dbpass= --skip-check --quiet \

@@ -23,6 +23,12 @@ Generic and public: it must work for any WordPress developer, not only CLOSE.
   clones them into `wp-content/plugins|themes/<slug>` as real checkouts, never symlinks. It never
   deletes an existing folder; `remove.sh` refuses to delete a site whose cloned repos hold
   uncommitted or unpushed work unless `--discard-repo-changes`.
+- **Migration (`/wp-migrate`):** WordPress Studio and LocalWP sites are converted in place after
+  backing up `wp-config.php` and the database. Studio (already SQLite) gets the sandbox config;
+  Local (MySQL) is dumped while running in Local and imported into SQLite. URLs move to
+  `localhost:<port>` and the login to `admin` / `password`. Registries: `~/.studio/cli.json` (and the
+  older `appdata-v1.json`), Local's `sites.json` on macOS and Linux; overridable with
+  `CLOSEHUB_SANDBOX_STUDIO_CONFIG` / `CLOSEHUB_SANDBOX_LOCAL_CONFIG`. Never delete a backup.
 - **Production-only plugins** (cache, security/anti-spam, SMTP, CDN, backups, management agents)
   listed in `templates/production-plugins.txt` are not installed and are removed from
   `active_plugins` on clones. Per import: `--keep-plugins` / `--remove-plugins`; preview with
@@ -48,6 +54,7 @@ Generic and public: it must work for any WordPress developer, not only CLOSE.
 .claude-plugin/plugin.json        Plugin manifest (name, version)
 .claude-plugin/marketplace.json   Single-plugin marketplace (install from this repo)
 commands/wp-local.md              /closehub-sandbox:wp-local — orchestrates the flow below
+commands/wp-migrate.md            /closehub-sandbox:wp-migrate — lists Studio/Local sites and migrates the chosen ones
 commands/wp-remove.md             /closehub-sandbox:wp-remove — confirms and deletes a sandbox
 skills/closehub-sandbox/SKILL.md      Auto-triggered guidance ("local WordPress", "sandbox"...)
 scripts/lib.sh                    Shared helpers: logging, dependency checks, free port, .env I/O
@@ -55,6 +62,9 @@ scripts/setup.sh                  Creates the site (core, SQLite drop-in, config
 scripts/serve.sh                  Starts the server; this is what launch.json runs
 scripts/launch.sh                 .claude/launch.json entries: add (--site), --list (ok|missing), --remove NAME
 scripts/remove.sh                 Deletes a sandbox (--yes required; refuses non-sandbox dirs; stops its server)
+scripts/migrate.sh                Migrates Studio/Local sites in place (--list, --site DIR); backup first
+scripts/migrate-registry.php      Reads the Studio and Local site registries (never prints passwords)
+scripts/mysql-dump.php            Dumps a Local MySQL database via mysqli in import-sql.php's format
 scripts/repos.sh                  Clones plugin/theme repos into the site (--plugin/--theme owner/repo[@branch][=slug])
 scripts/import.sh                 --from: download export job, import, URLs, plugins/theme, safety, login
 scripts/import-sql.php            Runs a MySQL dump through $wpdb (SQLite driver) via wp eval-file

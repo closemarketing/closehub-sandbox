@@ -1,6 +1,6 @@
 ---
 name: closehub-sandbox
-description: "Use this skill to create, start, inspect or remove a local WordPress sandbox (PHP built-in server + SQLite, no Docker/MySQL) for the plugin or theme in the current repo, and preview it in Claude's built-in browser via .claude/launch.json. Triggers on: 'local WordPress', 'WordPress sandbox', 'spin up WordPress', 'test this plugin locally', 'preview this theme', 'entorno local de WordPress', 'monta un WordPress', 'sandbox de WordPress', 'levanta el sitio local', '/wp-local'."
+description: "Use this skill to create, start, inspect or remove a local WordPress sandbox (PHP built-in server + SQLite, no Docker/MySQL) for the plugin or theme in the current repo, and preview it in Claude's built-in browser via .claude/launch.json. Triggers on: 'local WordPress', 'WordPress sandbox', 'spin up WordPress', 'test this plugin locally', 'migrate from Studio', 'migrate from Local', 'migrar sitios de Studio', 'migrar de LocalWP', 'preview this theme', 'entorno local de WordPress', 'monta un WordPress', 'sandbox de WordPress', 'levanta el sitio local', '/wp-local'."
 ---
 
 # closehub-sandbox
@@ -35,6 +35,7 @@ Follow the `/closehub-sandbox:wp-local` command (`${CLAUDE_PLUGIN_ROOT}/commands
 | WP-CLI on the sandbox | `wp --path="<site>" <command>` (php backend only) |
 | PHP errors | `<site>/wp-content/debug.log` (`WP_DEBUG_LOG` on, display off) |
 | Port in use | Change `CLOSEHUB_SANDBOX_PORT`, `WP_HOME`, `WP_SITEURL` in the site `.env`, re-run `launch.sh` |
+| Migrate WordPress Studio / LocalWP sites | `/closehub-sandbox:wp-migrate`: lists them, confirms, converts in place after a backup (`scripts/migrate.sh`) |
 | Remove a sandbox | `/closehub-sandbox:wp-remove`: confirms with the user (permanent, database included), stops the server, deletes the site (`scripts/remove.sh`, which refuses anything that is not a sandbox and never touches a mounted repo) and removes its `launch.json` entry |
 | Sandbox entry points to a deleted site | `scripts/launch.sh --list` shows it as `missing`; remove it with `launch.sh --remove <name>` |
 
