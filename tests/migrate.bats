@@ -122,3 +122,13 @@ MIGRATE() { env PATH="$STUBS:$PATH" bash "$SBX_REPO/scripts/migrate.sh" "$@"; }
 	[ "$status" -eq 2 ]
 	[[ "$output" == *"--user is required"* ]]
 }
+
+@test "--list follows Studio's movedTo to its new config file, without duplicates" {
+	mv "$CLOSEHUB_SANDBOX_STUDIO_CONFIG" "$TEST_TMP/config.json"
+	echo '{"version":2,"movedTo":"config.json"}' >"$CLOSEHUB_SANDBOX_STUDIO_CONFIG"
+	CLOSEHUB_SANDBOX_STUDIO_CONFIG="$TEST_TMP/config.json,$CLOSEHUB_SANDBOX_STUDIO_CONFIG" run MIGRATE --list
+	[ "$status" -eq 0 ]
+	[ "$(grep -c 'My Shop' <<<"$output")" -eq 1 ]
+	CLOSEHUB_SANDBOX_STUDIO_CONFIG="$TEST_TMP/cli.json" run MIGRATE --list
+	[[ "$output" == *"studio	My Shop	$STUDIO_SITE	8961"* ]]
+}

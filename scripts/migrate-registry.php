@@ -29,11 +29,25 @@ function closehub_sandbox_row( array $fields ): void {
 	echo implode( "\x1f", array_map( 'closehub_sandbox_field', $fields ) ), "\n";
 }
 
+$seen = array();
 foreach ( array_filter( explode( ',', $argv[1] ?? '' ) ) as $file ) {
 	if ( ! is_readable( $file ) ) {
 		continue;
 	}
 	$data = json_decode( (string) file_get_contents( $file ), true );
+	// Studio 2026+ leaves {"movedTo": "config.json"} behind when it moves its config.
+	if ( ! empty( $data['movedTo'] ) && empty( $data['sites'] ) ) {
+		$moved = dirname( $file ) . '/' . basename( (string) $data['movedTo'] );
+		if ( isset( $seen[ $moved ] ) || ! is_readable( $moved ) ) {
+			continue;
+		}
+		$file = $moved;
+		$data = json_decode( (string) file_get_contents( $file ), true );
+	}
+	if ( isset( $seen[ $file ] ) ) {
+		continue;
+	}
+	$seen[ $file ] = true;
 	foreach ( (array) ( $data['sites'] ?? array() ) as $site ) {
 		if ( empty( $site['path'] ) ) {
 			continue;

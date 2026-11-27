@@ -24,7 +24,7 @@ SBX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=scripts/lib.sh
 . "$SBX_ROOT/scripts/lib.sh"
 
-STUDIO_CONFIG="${CLOSEHUB_SANDBOX_STUDIO_CONFIG:-$HOME/.studio/cli.json,$HOME/Library/Application Support/Studio/appdata-v1.json,$HOME/.config/Studio/appdata-v1.json}"
+STUDIO_CONFIG="${CLOSEHUB_SANDBOX_STUDIO_CONFIG:-$HOME/.studio/config.json,$HOME/.studio/cli.json,$HOME/Library/Application Support/Studio/appdata-v1.json,$HOME/.config/Studio/appdata-v1.json}"
 LOCAL_CONFIG="${CLOSEHUB_SANDBOX_LOCAL_CONFIG:-$HOME/Library/Application Support/Local/sites.json,$HOME/.config/Local/sites.json}"
 
 LIST=0
