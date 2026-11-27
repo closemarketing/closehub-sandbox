@@ -134,3 +134,24 @@ sbx_env_load() {
 		export "$key=${line#*=}"
 	done <"$file"
 }
+
+# Install the SQLite drop-in (sqlite-database-integration + wp-content/db.php) into a site.
+# Usage: sbx_install_sqlite SITE
+sbx_install_sqlite() {
+	local site="$1" dir zip
+	dir="$site/wp-content/plugins/sqlite-database-integration"
+	if [ ! -f "$dir/db.copy" ]; then
+		zip="$(mktemp)"
+		curl -fsSL -o "$zip" https://downloads.wordpress.org/plugin/sqlite-database-integration.latest-stable.zip ||
+			sbx_die "could not download sqlite-database-integration"
+		unzip -q -o "$zip" -d "$site/wp-content/plugins"
+		rm -f "$zip"
+	fi
+	[ -f "$dir/db.copy" ] || sbx_die "unexpected sqlite-database-integration layout (db.copy missing)"
+	# Relative path via __DIR__ keeps the site movable.
+	# shellcheck disable=SC2016 # PHP code, not shell
+	php -r 'file_put_contents($argv[2], strtr(file_get_contents($argv[1]), [$argv[3] => $argv[4], $argv[5] => $argv[6]]));' \
+		"$dir/db.copy" "$site/wp-content/db.php" \
+		"'{SQLITE_IMPLEMENTATION_FOLDER_PATH}'" "__DIR__ . '/plugins/sqlite-database-integration'" \
+		"{SQLITE_PLUGIN}" "sqlite-database-integration/load.php"
+}

@@ -68,6 +68,26 @@ Log in to `/wp-admin/` with **`admin` / `password`**. Override with the `CLOSEHU
 `CLOSEHUB_SANDBOX_ADMIN_PASSWORD` environment variables before creating the site. The server only listens on
 `127.0.0.1`, which is what makes a fixed login acceptable: don't expose a sandbox on the network.
 
+### Migrating WordPress Studio and LocalWP sites
+
+```
+/closehub-sandbox:wp-migrate
+```
+
+Lists the sites registered in WordPress Studio and LocalWP, asks which ones to migrate and converts
+them **in place**:
+
+- `wp-config.php` and the database are backed up first to `<site>/.closehub-sandbox-backup-<time>/`.
+- Studio sites already use SQLite: only the sandbox config is added. Stop them in Studio first.
+- Local sites use MySQL: start them in Local, and their database is dumped (PHP `mysqli`, no
+  `mysqldump` needed) and imported into SQLite.
+- Custom domains (`*.wp.local`, `*.local`) become `http://localhost:<port>`; Studio sites keep their
+  port. Login becomes `admin` / `password`; other users are kept.
+- Each site gets its own `.claude/launch.json`: open Claude Code in the site folder to work on it.
+
+Studio and Local stop serving migrated sites. To undo, restore `wp-config.php` and the database from
+the backup folder and delete `.env`, `.closehub-sandbox-bin/` and `closehub-sandbox-env.php`.
+
 ### Removing a sandbox
 
 ```

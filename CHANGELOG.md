@@ -4,6 +4,17 @@ All notable changes to this project are documented here. Versions follow [semver
 
 ## [Unreleased]
 
+### Added
+
+- `/closehub-sandbox:wp-migrate` and `migrate.sh`: migrate WordPress Studio and LocalWP sites to
+  closehub-sandbox in place, with a backup of `wp-config.php` and the database. Local's MySQL
+  database is dumped (`mysql-dump.php`, PHP mysqli) and imported into SQLite; custom domains become
+  `localhost:<port>` and the login `admin` / `password`.
+
+### Changed
+
+- The SQLite drop-in install moved to `lib.sh` (`sbx_install_sqlite`), shared by setup and migration.
+
 ## [0.2.0] - 2026-11-25
 
 ### Added
