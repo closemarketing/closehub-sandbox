@@ -4,6 +4,8 @@ All notable changes to this project are documented here. Versions follow [semver
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-27
+
 ### Added
 
 - `/closehub-sandbox:wp-migrate` and `migrate.sh`: migrate WordPress Studio and LocalWP sites to
